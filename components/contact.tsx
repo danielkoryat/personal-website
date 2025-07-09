@@ -32,10 +32,10 @@ export function Contact() {
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
             <span className="gradient-text">Get In Touch</span>
           </h2>
-                        <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-                I&apos;m always interested in hearing about new opportunities and
-                exciting projects
-              </p>
+          <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+            I&apos;m always interested in hearing about new opportunities and
+            exciting projects
+          </p>
         </motion.div>
 
         <div className="grid lg:grid-cols-2 gap-12">
@@ -48,7 +48,7 @@ export function Contact() {
           >
             <div>
               <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
-                Let's Connect
+                Let&apos;s Connect
               </h3>
               <p className="text-gray-600 dark:text-gray-400 mb-8 leading-relaxed">
                 I&apos;m currently available for freelance work and full-time

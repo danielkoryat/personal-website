@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import { ExternalLink, Github, Star } from "lucide-react";
+import Image from "next/image";
 import { getSiteConfig } from "@/lib/utils";
 
 export function Projects() {
@@ -104,10 +105,11 @@ export function Projects() {
 
                     <div className="relative">
                       <div className="aspect-video bg-gradient-to-br from-blue-400 to-purple-600 rounded-lg overflow-hidden shadow-lg">
-                        <img
+                        <Image
                           src={project.imageUrl}
                           alt={project.title}
-                          className="w-full h-full object-cover"
+                          fill
+                          className="object-cover"
                         />
                       </div>
                     </div>
@@ -129,10 +131,11 @@ export function Projects() {
                   className="bg-white dark:bg-gray-700 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow card-hover"
                 >
                   <div className="aspect-video bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-600 dark:to-gray-700 relative overflow-hidden">
-                    <img
+                    <Image
                       src={project.imageUrl}
                       alt={project.title}
-                      className="w-full h-full object-cover"
+                      fill
+                      className="object-cover"
                     />
                     <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center">
                       <div className="opacity-0 hover:opacity-100 transition-opacity duration-300 flex space-x-2">
@@ -238,7 +241,7 @@ export function Projects() {
               href="#contact"
               className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
             >
-              Let's Connect
+              Let&apos;s Connect
             </a>
           </div>
         </motion.div>
