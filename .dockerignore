@@ -5,7 +5,7 @@ yarn-debug.log*
 yarn-error.log*
 
 # Next.js
-.next/
+# .next/  # Commented out to allow copying .next/standalone and .next/static
 out/
 
 # Production
