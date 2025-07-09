@@ -1,5 +1,8 @@
-# Use the official Node.js runtime as the base image
+# Use the official Node.js runtime as the base image with security updates
 FROM node:18-alpine AS base
+
+# Update system packages to fix vulnerabilities
+RUN apk update && apk upgrade --no-cache
 
 # Install dependencies only when needed
 FROM base AS deps
@@ -9,7 +12,7 @@ WORKDIR /app
 
 # Install dependencies based on the preferred package manager
 COPY package.json package-lock.json* ./
-RUN npm ci --only=production
+RUN npm ci
 
 # Rebuild the source code only when needed
 FROM base AS builder
