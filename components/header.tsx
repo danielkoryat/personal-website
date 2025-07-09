@@ -140,22 +140,8 @@ export function Header() {
               className="mobile-menu-container absolute top-0 right-0 h-full w-80 max-w-[85vw] bg-white dark:bg-gray-900 shadow-2xl"
             >
               <div className="flex flex-col h-full">
-                {/* Mobile menu header */}
-                <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-                  <span className="text-lg font-semibold gradient-text">
-                    Menu
-                  </span>
-                  <button
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="p-2 rounded-md text-gray-700 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400 transition-colors duration-200"
-                    aria-label="Close mobile menu"
-                  >
-                    <X size={24} />
-                  </button>
-                </div>
-
                 {/* Mobile menu items */}
-                <nav className="flex-1 px-6 py-4">
+                <nav className="flex-1 px-6 py-8">
                   <div className="space-y-2">
                     {navItems.map((item, index) => (
                       <motion.button
