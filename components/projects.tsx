@@ -14,25 +14,25 @@ export function Projects() {
   });
 
   return (
-    <section id="projects" className="py-20 bg-white dark:bg-gray-900">
+    <section id="projects" className="py-16 sm:py-20 bg-white dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           ref={ref}
           initial={{ opacity: 0, y: 50 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.8 }}
-          className="text-center mb-16"
+          className="text-center mb-12 sm:mb-16"
         >
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">
             <span className="gradient-text">Featured Projects</span>
           </h2>
-          <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+          <p className="text-base sm:text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto px-4 sm:px-0">
             Showcasing my work on AI-powered systems, microservices, and cloud
             infrastructure
           </p>
         </motion.div>
 
-        <div className="space-y-12">
+        <div className="space-y-8 sm:space-y-12">
           {/* Featured Project */}
           {config.projects
             .filter((p) => p.featured)
@@ -44,32 +44,32 @@ export function Projects() {
                 transition={{ duration: 0.8, delay: index * 0.2 }}
                 className="relative"
               >
-                <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-2xl p-8 border border-blue-200 dark:border-blue-800">
+                <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-2xl p-4 sm:p-6 lg:p-8 border border-blue-200 dark:border-blue-800">
                   <div className="flex items-center mb-4">
-                    <Star className="w-5 h-5 text-yellow-500 mr-2" />
-                    <span className="text-sm font-medium text-yellow-700 dark:text-yellow-300">
+                    <Star className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500 mr-2" />
+                    <span className="text-xs sm:text-sm font-medium text-yellow-700 dark:text-yellow-300">
                       Featured Project
                     </span>
                   </div>
 
-                  <div className="grid lg:grid-cols-2 gap-8 items-center">
-                    <div>
-                      <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                  <div className="grid lg:grid-cols-2 gap-6 lg:gap-8 items-center">
+                    <div className="order-2 lg:order-1">
+                      <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-3 sm:mb-4">
                         {project.title}
                       </h3>
-                      <p className="text-gray-700 dark:text-gray-300 mb-6 leading-relaxed">
+                      <p className="text-sm sm:text-base text-gray-700 dark:text-gray-300 mb-4 sm:mb-6 leading-relaxed">
                         {project.longDescription}
                       </p>
 
-                      <div className="mb-6">
-                        <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3 uppercase tracking-wide">
+                      <div className="mb-4 sm:mb-6">
+                        <h4 className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white mb-2 sm:mb-3 uppercase tracking-wide">
                           Technologies Used
                         </h4>
-                        <div className="flex flex-wrap gap-2">
+                        <div className="flex flex-wrap gap-1 sm:gap-2">
                           {project.technologies.map((tech) => (
                             <span
                               key={tech}
-                              className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                              className="inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
                             >
                               {tech}
                             </span>
@@ -77,13 +77,13 @@ export function Projects() {
                         </div>
                       </div>
 
-                      <div className="flex flex-wrap gap-4">
+                      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                         {project.githubUrl && (
                           <a
                             href={project.githubUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors"
+                            className="inline-flex items-center justify-center px-3 sm:px-4 py-2 sm:py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors text-sm sm:text-base"
                           >
                             <Github className="w-4 h-4 mr-2" />
                             View Code
@@ -94,7 +94,7 @@ export function Projects() {
                             href={project.liveUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                            className="inline-flex items-center justify-center px-3 sm:px-4 py-2 sm:py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base"
                           >
                             <ExternalLink className="w-4 h-4 mr-2" />
                             Live Demo
@@ -103,7 +103,7 @@ export function Projects() {
                       </div>
                     </div>
 
-                    <div className="relative">
+                    <div className="relative order-1 lg:order-2 mb-6 lg:mb-0">
                       <div className="aspect-video bg-gradient-to-br from-blue-400 to-purple-600 rounded-lg overflow-hidden shadow-lg">
                         <Image
                           src={project.imageUrl}
@@ -119,7 +119,7 @@ export function Projects() {
             ))}
 
           {/* Other Projects Grid */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {config.projects
               .filter((p) => !p.featured)
               .map((project, index) => (
@@ -163,16 +163,16 @@ export function Projects() {
                     </div>
                   </div>
 
-                  <div className="p-6">
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                  <div className="p-4 sm:p-6">
+                    <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-2">
                       {project.title}
                     </h3>
-                    <p className="text-gray-600 dark:text-gray-400 mb-4 line-clamp-3">
+                    <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-3 sm:mb-4 line-clamp-3">
                       {project.description}
                     </p>
 
-                    <div className="mb-4">
-                      <div className="flex flex-wrap gap-2">
+                    <div className="mb-3 sm:mb-4">
+                      <div className="flex flex-wrap gap-1 sm:gap-2">
                         {project.technologies.slice(0, 3).map((tech) => (
                           <span
                             key={tech}
@@ -227,19 +227,19 @@ export function Projects() {
           initial={{ opacity: 0, y: 30 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.8, delay: 1 }}
-          className="text-center mt-16"
+          className="text-center mt-12 sm:mt-16"
         >
-          <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-xl p-8">
-            <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
+          <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-xl p-6 sm:p-8">
+            <h3 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 text-gray-900 dark:text-white">
               Interested in working together?
             </h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
+            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-4 sm:mb-6">
               I&apos;m always open to discussing new opportunities and exciting
               projects
             </p>
             <a
               href="#contact"
-              className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+              className="inline-flex items-center px-4 sm:px-6 py-2 sm:py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm sm:text-base"
             >
               Let&apos;s Connect
             </a>

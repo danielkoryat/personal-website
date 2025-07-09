@@ -55,6 +55,24 @@
   }
   body {
     @apply bg-white dark:bg-gray-900 text-gray-900 dark:text-white;
+    /* Improve mobile scrolling */
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+  
+  /* Ensure minimum touch target size for mobile */
+  button, a, input, textarea, select {
+    @apply min-h-[44px] min-w-[44px];
+  }
+  
+  /* Improve mobile form elements */
+  input, textarea, select {
+    @apply text-base; /* Prevent zoom on iOS */
+  }
+  
+  /* Better mobile focus states */
+  button:focus, a:focus, input:focus, textarea:focus, select:focus {
+    @apply outline-none ring-2 ring-blue-500 ring-offset-2 ring-offset-white dark:ring-offset-gray-900;
   }
 }
 
@@ -78,6 +96,35 @@
   .skill-progress {
     @apply h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-1000 ease-out;
   }
+  
+  /* Mobile-specific utilities */
+  .mobile-touch-target {
+    @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
+  }
+  
+  .mobile-safe-area {
+    @apply px-4 sm:px-6 lg:px-8;
+  }
+  
+  .mobile-text-responsive {
+    @apply text-sm sm:text-base;
+  }
+  
+  .mobile-heading-responsive {
+    @apply text-2xl sm:text-3xl md:text-4xl;
+  }
+  
+  .mobile-spacing-responsive {
+    @apply space-y-4 sm:space-y-6 lg:space-y-8;
+  }
+  
+  .mobile-padding-responsive {
+    @apply p-4 sm:p-6 lg:p-8;
+  }
+  
+  .mobile-grid-responsive {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3;
+  }
 }
 
 /* Custom scrollbar */
@@ -95,4 +142,39 @@
 
 ::-webkit-scrollbar-thumb:hover {
   @apply bg-gray-400 dark:bg-gray-500;
+}
+
+/* Mobile-specific improvements */
+@media (max-width: 640px) {
+  /* Ensure proper viewport height on mobile */
+  .min-h-screen {
+    min-height: 100vh;
+    min-height: 100dvh; /* Dynamic viewport height for mobile */
+  }
+  
+  /* Improve mobile button interactions */
+  button, a {
+    @apply active:scale-95 transition-transform duration-150;
+  }
+  
+  /* Better mobile form spacing */
+  form {
+    @apply space-y-4;
+  }
+  
+  /* Mobile-optimized text selection */
+  ::selection {
+    @apply bg-blue-200 dark:bg-blue-800;
+  }
+}
+
+/* Prevent horizontal scroll on mobile */
+html, body {
+  overflow-x: hidden;
+  width: 100%;
+}
+
+/* Improve mobile performance */
+* {
+  -webkit-tap-highlight-color: transparent;
 } 
