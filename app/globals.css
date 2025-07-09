@@ -74,6 +74,14 @@
   button:focus, a:focus, input:focus, textarea:focus, select:focus {
     @apply outline-none ring-2 ring-blue-500 ring-offset-2 ring-offset-white dark:ring-offset-gray-900;
   }
+  
+  /* Body scroll lock for mobile menu */
+  body.menu-open {
+    overflow: hidden !important;
+    position: fixed !important;
+    width: 100% !important;
+    height: 100% !important;
+  }
 }
 
 @layer components {
@@ -125,6 +133,22 @@
   .mobile-grid-responsive {
     @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3;
   }
+  
+  /* Mobile menu specific styles */
+  .mobile-menu-container {
+    /* Ensure menu is above header */
+    z-index: 50;
+    /* Ensure proper positioning */
+    top: 0;
+    right: 0;
+    height: 100vh;
+    height: 100dvh; /* Dynamic viewport height for mobile */
+  }
+  
+  /* Ensure header stays above content but below mobile menu */
+  header {
+    z-index: 40;
+  }
 }
 
 /* Custom scrollbar */
@@ -165,6 +189,14 @@
   /* Mobile-optimized text selection */
   ::selection {
     @apply bg-blue-200 dark:bg-blue-800;
+  }
+  
+  /* Ensure mobile menu is properly positioned */
+  .mobile-menu-container {
+    top: 0 !important;
+    right: 0 !important;
+    height: 100vh !important;
+    height: 100dvh !important;
   }
 }
 
