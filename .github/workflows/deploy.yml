@@ -1,6 +1,5 @@
 name: Deploy to Home Server
 
-# When this workflow runs
 on:
   push:
     branches: [ main ]
@@ -8,32 +7,23 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     
     steps:
-    # Step 1: Get the latest code from GitHub
     - name: Checkout code
       uses: actions/checkout@v4
     
-    # Step 2: Deploy to your home server
-    - name: Deploy to home server
-      uses: appleboy/ssh-action@v1.0.3
-      with:
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USERNAME }}
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
-        script: |
-          # Navigate to project directory
-          cd ~/personal-website
-          
-          # Pull latest changes from GitHub
-          git pull origin main
-          
-          # Stop current containers
-          docker compose down
-          
-          # Rebuild and start containers with new code
-          docker compose up -d --build
-          
-          # Show container status
-          docker compose ps
+    - name: Deploy application
+      run: |
+        echo "Starting deployment..."
+        docker compose down
+        docker compose up -d --build
+        echo "✅ Deployment completed successfully!"
+    
+    - name: Show container status
+      run: docker compose ps
+    
+    - name: Show deployment info
+      run: |
+        echo "🚀 Website deployed at: http://192.168.0.165:8080"
+        echo "📅 Deployment time: $(date)"
