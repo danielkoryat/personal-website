@@ -18,20 +18,39 @@ jobs:
     - name: 2. Setup Docker Buildx
       uses: docker/setup-buildx-action@v3
 
-    - name: 3. Ensure Core Infrastructure is Running
+    - name: 3. Create initial upstream config if needed
+      run: |
+        # This step is crucial for the very first deployment.
+        # It ensures nginx has a valid include file to read on its first start.
+        if [ ! -f active_upstream.conf ]; then
+          echo "Creating initial active_upstream.conf, pointing to blue..."
+          echo 'set $active_upstream daniel-koryat-portfolio-blue:3000;' > active_upstream.conf
+        fi
+
+    - name: 4. Ensure Core Infrastructure is Running
       run: |
         echo "🌐 Ensuring nginx and cloudflared are running..."
-        # Stop everything first to ensure clean state
-        docker compose down
-        # Start nginx first, then cloudflared
+        # This will now start nginx without error every time.
         docker compose up -d nginx
-        # Wait for nginx to be healthy
-        sleep 30
-        docker compose up -d cloudflared
+        
+        # Wait for nginx to become healthy before starting cloudflared
+        for i in {1..10}; do
+          HEALTH_STATUS=$(docker inspect --format '{{.State.Health.Status}}' portfolio-nginx 2>/dev/null || echo "starting")
+          if [ "${HEALTH_STATUS}" == "healthy" ]; then
+            echo "✅ Nginx is healthy!"
+            docker compose up -d cloudflared
+            exit 0
+          fi
+          echo "   - Waiting for Nginx to be healthy... (Status: ${HEALTH_STATUS})"
+          sleep 6
+        done
+        echo "❌ Nginx failed to start. Check logs."
+        docker compose logs nginx
+        exit 1
 
-    - name: 4. Determine Deployment Slots
+    - name: 5. Determine Deployment Slots
       run: |
-        if grep -q "server daniel-koryat-portfolio-green:3000 backup" nginx.conf; then
+        if grep -q "blue" active_upstream.conf; then
           LIVE_SLOT="blue"
           DEPLOY_SLOT="green"
         else
@@ -43,77 +62,40 @@ jobs:
         echo "LIVE_SLOT=${LIVE_SLOT}" >> $GITHUB_ENV
         echo "DEPLOY_SLOT=${DEPLOY_SLOT}" >> $GITHUB_ENV
 
-    - name: 5. Clean Up Target Environment Only
-      run: |
-        echo "🧹 Cleaning up only the ${DEPLOY_SLOT} environment..."
-        docker compose stop "portfolio-${{ env.DEPLOY_SLOT }}" || true
-        docker compose rm -f "portfolio-${{ env.DEPLOY_SLOT }}" || true
-
     - name: 6. Build and Deploy New Version
       run: |
-        echo "🔨 Building the ${{ env.DEPLOY_SLOT }} container..."
-        docker compose build --no-cache "portfolio-${{ env.DEPLOY_SLOT }}"
-        
-        echo "🚀 Starting the ${{ env.DEPLOY_SLOT }} container..."
-        docker compose up -d "portfolio-${{ env.DEPLOY_SLOT }}"
+        echo "🔨 Building and deploying portfolio-${{ env.DEPLOY_SLOT }}..."
+        docker compose up -d --build --force-recreate "portfolio-${{ env.DEPLOY_SLOT }}"
 
     - name: 7. Wait for New Environment to be Healthy
       run: |
         CONTAINER_NAME="daniel-koryat-portfolio-${{ env.DEPLOY_SLOT }}"
-        SERVICE_NAME="portfolio-${{ env.DEPLOY_SLOT }}"
         echo "🔍 Waiting for ${CONTAINER_NAME} to become healthy..."
         for i in {1..30}; do
           HEALTH_STATUS=$(docker inspect --format '{{.State.Health.Status}}' ${CONTAINER_NAME} 2>/dev/null || echo "starting")
           if [ "${HEALTH_STATUS}" == "healthy" ]; then
             echo "✅ ${CONTAINER_NAME} is healthy!"
-            break
+            exit 0
           fi
           echo "   - Waiting... (Status: ${HEALTH_STATUS})"
           sleep 10
         done
-        
-        if [ "${HEALTH_STATUS}" != "healthy" ]; then
-          echo "❌ ${CONTAINER_NAME} failed to become healthy. Aborting."
-          docker compose logs ${SERVICE_NAME}
-          exit 1
-        fi
+        echo "❌ ${CONTAINER_NAME} failed to become healthy. Aborting."
+        docker compose logs "portfolio-${{ env.DEPLOY_SLOT }}"
+        exit 1
 
     - name: 8. Switch Traffic (Zero Downtime)
       run: |
         echo "🔄 Switching traffic from ${{ env.LIVE_SLOT }} to ${{ env.DEPLOY_SLOT }}..."
         
-        # Check nginx is running
-        if ! docker compose ps nginx | grep -q "running"; then
-          echo "❌ Nginx is not running!"
-          exit 1
-        fi
-        
-        # Create backup of current config
-        cp nginx.conf nginx.conf.backup
-        
-        # Update nginx configuration
-        sed -i "s/server daniel-koryat-portfolio-${{ env.LIVE_SLOT }}:3000 max_fails=3 fail_timeout=30s;/server daniel-koryat-portfolio-${{ env.LIVE_SLOT }}:3000 backup max_fails=3 fail_timeout=30s;/" nginx.conf
-        sed -i "s/server daniel-koryat-portfolio-${{ env.DEPLOY_SLOT }}:3000 backup max_fails=3 fail_timeout=30s;/server daniel-koryat-portfolio-${{ env.DEPLOY_SLOT }}:3000 max_fails=3 fail_timeout=30s;/" nginx.conf
-        
-        # Test configuration
-        echo "Testing nginx configuration..."
-        if ! docker run --rm -v $(pwd)/nginx.conf:/etc/nginx/nginx.conf:ro nginx:alpine nginx -t; then
-          echo "❌ Configuration test failed! Rolling back..."
-          mv nginx.conf.backup nginx.conf
-          exit 1
-        fi
-        
-        # Graceful reload
+        # Atomically switch the upstream by overwriting the include file.
+        # This is much safer than using sed.
+        echo "set \$active_upstream daniel-koryat-portfolio-${{ env.DEPLOY_SLOT }}:3000;" > active_upstream.conf
+
+        # Perform a graceful reload to apply the change with zero downtime.
         echo "Performing graceful nginx reload..."
-        if docker compose exec nginx nginx -s reload; then
-          echo "✅ Traffic switched with zero downtime!"
-          rm nginx.conf.backup
-        else
-          echo "❌ Reload failed! Rolling back..."
-          mv nginx.conf.backup nginx.conf
-          docker compose exec nginx nginx -s reload
-          exit 1
-        fi
+        docker compose exec nginx nginx -s reload
+        echo "✅ Traffic switched!"
 
     - name: 9. Clean Up Old Environment
       run: |
@@ -123,5 +105,4 @@ jobs:
     - name: 10. Show Final Status
       run: |
         echo "🎉 Zero-downtime deployment complete!"
-        echo "📊 Container Status:"
         docker compose ps
