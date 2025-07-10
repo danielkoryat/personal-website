@@ -70,7 +70,7 @@ export function Hero() {
               className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mx-4 sm:mx-0"
             >
               <p className="text-blue-800 dark:text-blue-200 font-medium text-sm sm:text-base">
-                Currently developing AI backend platform for Sidekick Wellness
+                Currently developing AI backend platform for Sidekick Platform
               </p>
             </motion.div>
 
@@ -94,13 +94,31 @@ export function Hero() {
                 variant="outline"
                 size="lg"
                 className="group w-full sm:w-auto"
-                onClick={() => {
-                  // In a real implementation, this would download a PDF resume
-                  window.open("/resume.pdf", "_blank");
+                onClick={async () => {
+                  try {
+                    const response = await fetch("/api/resume?format=pdf");
+                    if (response.ok) {
+                      const blob = await response.blob();
+                      const url = window.URL.createObjectURL(blob);
+                      const a = document.createElement("a");
+                      a.href = url;
+                      a.download = "Daniel_Koryat_Resume.pdf";
+                      document.body.appendChild(a);
+                      a.click();
+                      window.URL.revokeObjectURL(url);
+                      document.body.removeChild(a);
+                    } else {
+                      alert(
+                        "Resume not available. Please check the contact section for download options."
+                      );
+                    }
+                  } catch (error) {
+                    alert("Failed to download resume. Please try again.");
+                  }
                 }}
               >
                 <Download className="mr-2 h-5 w-5 group-hover:animate-bounce" />
-                View Resume
+                Download Resume
               </Button>
             </motion.div>
           </motion.div>

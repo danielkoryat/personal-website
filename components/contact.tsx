@@ -2,9 +2,10 @@
 
 import { motion } from "framer-motion";
 import { useInView } from "react-intersection-observer";
-import { Mail, Phone, MapPin, Github, Linkedin, Send } from "lucide-react";
+import { Mail, Phone, MapPin, Github, Linkedin, Send, Download, FileText } from "lucide-react";
 import { Button } from "./ui/button";
 import { getSiteConfig } from "@/lib/utils";
+import { useState } from "react";
 
 export function Contact() {
   const config = getSiteConfig();
@@ -13,10 +14,78 @@ export function Contact() {
     threshold: 0.1,
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<{
+    type: 'success' | 'error' | null;
+    message: string;
+  }>({ type: null, message: '' });
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // In a real implementation, this would send the form data to an API
-    console.log("Form submitted");
+    setIsSubmitting(true);
+    setSubmitStatus({ type: null, message: '' });
+
+    const formData = new FormData(e.currentTarget);
+    const data = {
+      name: formData.get('name') as string,
+      email: formData.get('email') as string,
+      subject: formData.get('subject') as string,
+      message: formData.get('message') as string,
+    };
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        setSubmitStatus({
+          type: 'success',
+          message: 'Message sent successfully! I\'ll get back to you soon.',
+        });
+        e.currentTarget.reset();
+      } else {
+        setSubmitStatus({
+          type: 'error',
+          message: result.error || 'Failed to send message. Please try again.',
+        });
+      }
+    } catch (error) {
+      setSubmitStatus({
+        type: 'error',
+        message: 'Network error. Please check your connection and try again.',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleResumeDownload = async (format: 'pdf' | 'docx') => {
+    try {
+      const response = await fetch(`/api/resume?format=${format}`);
+      
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Daniel_Koryat_Resume.${format}`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      } else {
+        alert(`Resume not available in ${format.toUpperCase()} format. Please try PDF.`);
+      }
+    } catch (error) {
+      alert('Failed to download resume. Please try again.');
+    }
   };
 
   return (
@@ -139,6 +208,29 @@ export function Contact() {
               </div>
             </div>
 
+            {/* Resume Download */}
+            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 sm:p-6">
+              <h4 className="font-medium text-green-900 dark:text-green-100 mb-3 text-sm sm:text-base">
+                Download Resume
+              </h4>
+              <div className="space-y-2">
+                <button
+                  onClick={() => handleResumeDownload('pdf')}
+                  className="w-full flex items-center justify-center space-x-2 bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg text-sm transition-colors"
+                >
+                  <FileText className="w-4 h-4" />
+                  <span>Download PDF</span>
+                </button>
+                <button
+                  onClick={() => handleResumeDownload('docx')}
+                  className="w-full flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-sm transition-colors"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>Download DOCX</span>
+                </button>
+              </div>
+            </div>
+
             {/* Current Status */}
             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 sm:p-6">
               <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-2 text-sm sm:text-base">
@@ -148,7 +240,7 @@ export function Contact() {
                 🟢 Available for new opportunities
               </p>
               <p className="text-blue-700 dark:text-blue-300 text-xs sm:text-sm mt-1">
-                Currently working on AI backend platform at Sidekick Wellness
+                Currently working on AI backend platform at Sidekick Platform
               </p>
             </div>
           </motion.div>
@@ -165,6 +257,18 @@ export function Contact() {
             </h3>
 
             <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+              {/* Status Messages */}
+              {submitStatus.type && (
+                <div
+                  className={`p-3 rounded-lg text-sm ${
+                    submitStatus.type === 'success'
+                      ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-800 dark:text-green-200'
+                      : 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200'
+                  }`}
+                >
+                  {submitStatus.message}
+                </div>
+              )}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                 <div>
                   <label
@@ -235,9 +339,14 @@ export function Contact() {
                 />
               </div>
 
-              <Button type="submit" size="lg" className="w-full group">
+              <Button 
+                type="submit" 
+                size="lg" 
+                className="w-full group" 
+                disabled={isSubmitting}
+              >
                 <Send className="w-4 h-4 sm:w-5 sm:h-5 mr-2 group-hover:animate-bounce" />
-                Send Message
+                {isSubmitting ? 'Sending...' : 'Send Message'}
               </Button>
             </form>
           </motion.div>

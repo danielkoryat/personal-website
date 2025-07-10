@@ -155,12 +155,47 @@ Update `tailwind.config.js` to customize:
 
 ### Environment Variables
 
+#### For Local Development
+
 Create `.env.local` for local development:
 
 ```env
 # Add any environment variables here
 NEXT_PUBLIC_SITE_URL=https://your-domain.com
+
+# Email Configuration for Contact Form (Local Development Only)
+# For production, use GitHub Secrets (see GITHUB_SECRETS_SETUP.md)
+EMAIL_USER=your-email@gmail.com
+EMAIL_PASS=your-gmail-app-password
 ```
+
+#### For Production Deployment
+
+**Use GitHub Secrets for better security!** See `GITHUB_SECRETS_SETUP.md` for detailed instructions.
+
+1. **Enable 2-Factor Authentication** on your Gmail account
+2. **Generate an App Password**:
+   - Go to Google Account settings
+   - Security → 2-Step Verification → App passwords
+   - Generate a password for "Mail"
+3. **Add GitHub Secrets**:
+   - Go to your repository Settings → Secrets and variables → Actions
+   - Add `EMAIL_USER` with your Gmail address
+   - Add `EMAIL_PASS` with the generated app password
+
+**Security Benefits:**
+- ✅ Secrets are encrypted and never exposed in logs
+- ✅ No need to commit sensitive data to your repository
+- ✅ Secrets can be rotated without code changes
+- ✅ Different secrets for different environments
+
+### Resume Upload
+
+1. **Add your resume files** to the `public/resumes/` directory
+2. **Naming convention**: Include "resume" in the filename
+   - `resume.pdf` for PDF format
+   - `resume.docx` for Word format
+3. **Files will be automatically available** for download via the contact form
 
 ### Custom Domain
 

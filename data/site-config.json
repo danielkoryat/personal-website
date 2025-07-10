@@ -3,7 +3,7 @@
   "title": "Backend Web Developer & AWS Cloud Specialist",
   "subtitle": "Building scalable AI-powered systems with Python, FastAPI, and AWS",
   "description": "Backend Web Developer specializing in Python/FastAPI, AWS cloud services, and AI/ML systems. Currently developing AI-powered backend platforms with microservices architecture.",
-  "intro": "I'm Daniel, a Python/FastAPI backend specialist currently developing AI-powered systems for Sidekick Wellness. I build scalable microservices on AWS, implement RAG systems with LangChain, and optimize performance with Redis caching strategies.",
+  "intro": "I'm Daniel, a Python/FastAPI backend specialist currently developing AI-powered systems for Sidekick Platform. I build scalable microservices on AWS, implement RAG systems with LangChain, and optimize performance with Redis caching strategies.",
   "contact": {
     "email": "dan.koryat@gmail.com",
     "phone": "647-947-8332",
@@ -155,9 +155,9 @@
   ],
   "experience": [
     {
-      "id": "sidekick-wellness",
+      "id": "sidekick-platform",
       "title": "Backend Web Developer",
-      "company": "Sidekick Wellness",
+      "company": "Sidekick Platform",
       "location": "Remote",
       "startDate": "2024-02",
       "current": true,
@@ -184,9 +184,9 @@
   "projects": [
     {
       "id": "sidekick-ai-platform",
-      "title": "Sidekick Wellness AI Backend Platform",
+      "title": "Sidekick Platform AI Backend Platform",
       "description": "AI-powered backend platform with RAG systems and microservices architecture",
-      "longDescription": "A comprehensive AI backend platform that leverages Retrieval-Augmented Generation (RAG) to provide intelligent responses. Built with microservices architecture for scalability, featuring Redis caching for performance optimization and AWS infrastructure managed through Terraform. The platform integrates multiple data sources and provides real-time AI-powered insights for wellness applications.",
+      "longDescription": "A comprehensive AI backend platform that leverages Retrieval-Augmented Generation (RAG) to provide intelligent responses. Built with microservices architecture for scalability, featuring Redis caching for performance optimization and AWS infrastructure managed through Terraform. The platform integrates multiple data sources and provides real-time AI-powered insights for platform applications.",
       "imageUrl": "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&h=600&fit=crop",
       "technologies": [
         "Python",

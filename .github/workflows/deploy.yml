@@ -10,6 +10,8 @@ jobs:
     runs-on: self-hosted
     env:
       CLOUDFLARED_TOKEN: ${{ secrets.CLOUDFLARE_TUNNEL_TOKEN }}
+      EMAIL_USER: ${{ secrets.EMAIL_USER }}
+      EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
     
     steps:
     - name: 1. Checkout Code

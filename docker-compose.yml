@@ -8,6 +8,8 @@ services:
     environment:
       - NODE_ENV=production
       - NEXT_TELEMETRY_DISABLED=1
+      - EMAIL_USER=${EMAIL_USER}
+      - EMAIL_PASS=${EMAIL_PASS}
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:3000/api/health"]
       interval: 15s
@@ -26,6 +28,8 @@ services:
     environment:
       - NODE_ENV=production
       - NEXT_TELEMETRY_DISABLED=1
+      - EMAIL_USER=${EMAIL_USER}
+      - EMAIL_PASS=${EMAIL_PASS}
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:3000/api/health"]
       interval: 15s
