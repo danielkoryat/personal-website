@@ -8,6 +8,8 @@ on:
 jobs:
   deploy:
     runs-on: self-hosted
+    env:
+      CLOUDFLARED_TOKEN: ${{ secrets.CLOUDFLARE_TUNNEL_TOKEN }}
     
     steps:
     - name: Checkout code
@@ -26,37 +28,38 @@ jobs:
         echo "🧹 Cleaning up old Docker images..."
         docker image prune -f
     
-    - name: Build and deploy application
-      # This is the key change: Make the secret available as an environment variable
-      env:
-        CLOUDFLARED_TOKEN: ${{ secrets.CLOUDFLARE_TUNNEL_TOKEN }}
+    - name: Build and deploy the entire stack
       run: |
-        echo "🔨 Building and deploying the entire stack..."
-        
-        # Docker Compose will now have access to the $CLOUDFLARED_TOKEN variable
+        echo "🔨 Building and deploying all services..."
         docker compose up --build -d --remove-orphans
     
     - name: Verify deployment
       run: |
         echo "🔍 Verifying deployment..."
+        # Give the app a few seconds to become healthy before checking
+        sleep 15 
+        
         if docker compose ps | grep -q "Up"; then
-          echo "✅ All containers are running successfully."
+          echo "✅ All containers are running."
         else
-          echo "❌ Container startup failed. Check the logs."
+          echo "❌ Container startup failed. Checking logs..."
           docker compose logs
           exit 1
         fi
+
         if curl --fail http://localhost:8080/health > /dev/null 2>&1; then
           echo "✅ Health check passed on localhost:8080."
         else
-          echo "⚠️ Health check on localhost:8080 failed, but continuing..."
+          echo "❌ Health check on localhost:8080 failed. Checking logs..."
+          docker compose logs nginx
+          docker compose logs portfolio-blue
+          exit 1
         fi
     
     - name: Show deployment info
       run: |
         echo "🚀 Website deployed successfully!"
         echo "📅 Deployment time: $(date)"
-        echo "🌐 Your site is live and accessible via your Cloudflare domain."
         
         echo ""
         echo "📊 Final Container Status:"
