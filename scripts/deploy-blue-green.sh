@@ -20,9 +20,52 @@ check_health() {
   exit 1
 }
 
-# 1. Ensure Nginx and Cloudflared are running
+# 1. Safely clean up orphaned containers (preserve live environment)
+echo "🧹 Safely cleaning up orphaned containers..."
+
+# Check which environment is currently active
+if [ -f active_upstream.conf ]; then
+  if grep -q "blue" active_upstream.conf; then
+    ACTIVE_SLOT="blue"
+    STANDBY_SLOT="green"
+  else
+    ACTIVE_SLOT="green"
+    STANDBY_SLOT="blue"
+  fi
+  
+  echo "🔵 Active slot: ${ACTIVE_SLOT}"
+  echo "🟢 Standby slot: ${STANDBY_SLOT}"
+  
+  # Only remove the standby slot container if it exists and is not healthy
+  STANDBY_CONTAINER="daniel-koryat-portfolio-${STANDBY_SLOT}"
+  if docker ps -q -f name="${STANDBY_CONTAINER}" | grep -q .; then
+    HEALTH_STATUS=$(docker inspect --format '{{.State.Health.Status}}' ${STANDBY_CONTAINER} 2>/dev/null || echo "none")
+    if [ "${HEALTH_STATUS}" != "healthy" ]; then
+      echo "🛑 Removing unhealthy standby container: ${STANDBY_CONTAINER}"
+      docker rm -f ${STANDBY_CONTAINER} 2>/dev/null || true
+    else
+      echo "✅ Keeping healthy standby container: ${STANDBY_CONTAINER}"
+    fi
+  fi
+else
+  echo "⚠️ No active_upstream.conf found, performing minimal cleanup"
+  # Only remove containers that are not running or healthy
+  for container in daniel-koryat-portfolio-blue daniel-koryat-portfolio-green; do
+    if docker ps -q -f name="${container}" | grep -q .; then
+      HEALTH_STATUS=$(docker inspect --format '{{.State.Health.Status}}' ${container} 2>/dev/null || echo "none")
+      if [ "${HEALTH_STATUS}" != "healthy" ]; then
+        echo "🛑 Removing unhealthy container: ${container}"
+        docker rm -f ${container} 2>/dev/null || true
+      else
+        echo "✅ Keeping healthy container: ${container}"
+      fi
+    fi
+  done
+fi
+
+# 2. Ensure Nginx and Cloudflared are running
 echo "🌐 Ensuring core services (nginx, cloudflared) are up..."
-docker compose up -d nginx cloudflared
+docker compose up -d --remove-orphans nginx cloudflared
 
 # 2. Determine which environment is live and which is the target for deployment
 # We check which server is active in active_upstream.conf
@@ -38,27 +81,142 @@ echo "🚀 Starting deployment..."
 echo "  - Live Environment: ${LIVE_SLOT}"
 echo "  - Deploying To: ${DEPLOY_SLOT}"
 
-# 3. Build and deploy the new version to the standby slot
-echo "🔨 Building and deploying the ${DEPLOY_SLOT} container..."
-docker compose up --build -d "daniel-koryat-portfolio-${DEPLOY_SLOT}"
+# 3. Validate live environment health before proceeding
+LIVE_CONTAINER="daniel-koryat-portfolio-${LIVE_SLOT}"
+echo "🔍 Validating live environment health: ${LIVE_CONTAINER}"
 
-# 4. Wait for the new container to be healthy
+# Check if live container exists and is healthy
+if ! docker ps -q -f name="${LIVE_CONTAINER}" | grep -q .; then
+    echo "❌ Live container ${LIVE_CONTAINER} is not running!"
+    echo "🚀 Starting live container..."
+    docker compose up -d --remove-orphans "${LIVE_CONTAINER}"
+    
+    # Wait for it to become healthy
+    timeout_seconds=120
+    elapsed=0
+    while [ $elapsed -lt $timeout_seconds ]; do
+        HEALTH_STATUS=$(docker inspect --format '{{.State.Health.Status}}' ${LIVE_CONTAINER} 2>/dev/null || echo "starting")
+        if [ "${HEALTH_STATUS}" == "healthy" ]; then
+            echo "✅ Live container is now healthy!"
+            break
+        fi
+        echo "⏳ Waiting for live container to be healthy... (Status: ${HEALTH_STATUS})"
+        sleep 10
+        elapsed=$((elapsed + 10))
+    done
+    
+    if [ $elapsed -ge $timeout_seconds ]; then
+        echo "❌ Live container failed to become healthy. Aborting deployment."
+        exit 1
+    fi
+else
+    HEALTH_STATUS=$(docker inspect --format '{{.State.Health.Status}}' ${LIVE_CONTAINER} 2>/dev/null || echo "none")
+    if [ "${HEALTH_STATUS}" != "healthy" ]; then
+        echo "❌ Live container ${LIVE_CONTAINER} is not healthy (Status: ${HEALTH_STATUS})"
+        echo "🔄 Attempting to restart live container..."
+        docker restart ${LIVE_CONTAINER}
+        
+        # Wait for it to become healthy
+        timeout_seconds=120
+        elapsed=0
+        while [ $elapsed -lt $timeout_seconds ]; do
+            HEALTH_STATUS=$(docker inspect --format '{{.State.Health.Status}}' ${LIVE_CONTAINER} 2>/dev/null || echo "starting")
+            if [ "${HEALTH_STATUS}" == "healthy" ]; then
+                echo "✅ Live container is now healthy!"
+                break
+            fi
+            echo "⏳ Waiting for live container to be healthy... (Status: ${HEALTH_STATUS})"
+            sleep 10
+            elapsed=$((elapsed + 10))
+        done
+        
+        if [ $elapsed -ge $timeout_seconds ]; then
+            echo "❌ Live container failed to become healthy. Aborting deployment."
+            exit 1
+        fi
+    else
+        echo "✅ Live container is healthy!"
+    fi
+fi
+
+# 4. Build and deploy the new version to the standby slot
+echo "🔨 Building and deploying the ${DEPLOY_SLOT} container..."
+docker compose up --build -d --remove-orphans "daniel-koryat-portfolio-${DEPLOY_SLOT}"
+
+# 5. Wait for the new container to be healthy
 check_health "daniel-koryat-portfolio-${DEPLOY_SLOT}"
 
-# 5. Switch Nginx traffic to the newly deployed container
+# 6. Switch Nginx traffic to the newly deployed container
 echo "🔄 Switching Nginx traffic to ${DEPLOY_SLOT}..."
 # Backup current config
 cp active_upstream.conf active_upstream.conf.backup
 
+# Create a temporary config with both upstreams for smooth transition
+echo "set \$active_upstream daniel-koryat-portfolio-${DEPLOY_SLOT}:3000;" > active_upstream.conf.tmp
+echo "set \$backup_upstream daniel-koryat-portfolio-${LIVE_SLOT}:3000;" >> active_upstream.conf.tmp
+
 # Atomically switch the upstream
-echo "set \$active_upstream daniel-koryat-portfolio-${DEPLOY_SLOT}:3000;" > active_upstream.conf
+mv active_upstream.conf.tmp active_upstream.conf
 
-# Gracefully reload Nginx to apply the new configuration with zero downtime
+# Perform graceful nginx reload with connection draining
+echo "🔄 Performing graceful nginx reload with connection draining..."
+
+# Send SIGUSR1 to nginx for graceful reload (drains existing connections)
 docker compose exec nginx nginx -s reload
-echo "✅ Traffic switched successfully."
 
-# 6. Stop the old live container, making it the new standby
+# Wait a moment for connections to drain
+echo "⏳ Waiting for connections to drain..."
+sleep 5
+
+# Verify the new environment is still healthy after traffic switch
+NEW_CONTAINER="daniel-koryat-portfolio-${DEPLOY_SLOT}"
+HEALTH_STATUS=$(docker inspect --format '{{.State.Health.Status}}' ${NEW_CONTAINER} 2>/dev/null || echo "none")
+
+if [ "${HEALTH_STATUS}" == "healthy" ]; then
+    echo "✅ Traffic switched successfully! New environment is healthy."
+else
+    echo "❌ New environment is not healthy after traffic switch. Rolling back..."
+    
+    # Rollback to previous configuration
+    mv active_upstream.conf.backup active_upstream.conf
+    docker compose exec nginx nginx -s reload
+    
+    echo "❌ Deployment failed - rolled back to previous environment"
+    exit 1
+fi
+
+# 7. Final validation
+echo "🔍 Performing final deployment validation..."
+
+# Verify the new environment is still healthy
+NEW_CONTAINER="daniel-koryat-portfolio-${DEPLOY_SLOT}"
+HEALTH_STATUS=$(docker inspect --format '{{.State.Health.Status}}' ${NEW_CONTAINER} 2>/dev/null || echo "none")
+
+if [ "${HEALTH_STATUS}" != "healthy" ]; then
+    echo "❌ Final validation failed - new environment is not healthy"
+    echo "🔄 Rolling back to previous environment..."
+    
+    # Rollback to previous configuration
+    if [ -f active_upstream.conf.backup ]; then
+        mv active_upstream.conf.backup active_upstream.conf
+        docker compose exec nginx nginx -s reload
+        echo "✅ Rollback completed"
+    fi
+    
+    exit 1
+fi
+
+# Verify nginx is serving traffic correctly
+NGINX_STATUS=$(docker inspect --format '{{.State.Health.Status}}' portfolio-nginx 2>/dev/null || echo "none")
+if [ "${NGINX_STATUS}" != "healthy" ]; then
+    echo "❌ Final validation failed - nginx is not healthy"
+    exit 1
+fi
+
+echo "✅ Final validation passed - deployment successful!"
+
+# 8. Stop the old live container, making it the new standby
 echo "🛑 Stopping the old ${LIVE_SLOT} container..."
 docker compose stop "daniel-koryat-portfolio-${LIVE_SLOT}"
 
-echo "🎉 Deployment complete. ${DEPLOY_SLOT} is now the live environment."
+echo "🎉 Zero-downtime deployment complete. ${DEPLOY_SLOT} is now the live environment."
