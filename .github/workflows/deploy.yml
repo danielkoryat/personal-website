@@ -18,49 +18,13 @@ jobs:
     - name: Setup Docker Buildx
       uses: docker/setup-buildx-action@v3
     
-    - name: Stop and remove old containers
-      run: |
-        echo "🛑 Stopping all existing application containers..."
-        docker compose down --remove-orphans || true
+    - name: Make deployment script executable
+      run: chmod +x deploy-blue-green.sh
+      
+    - name: Run Blue-Green Deployment
+      run: ./deploy-blue-green.sh
     
-    - name: Clean up unused Docker images
+    - name: Show final status
       run: |
-        echo "🧹 Cleaning up old Docker images..."
-        docker image prune -f
-    
-    - name: Build and deploy the entire stack
-      run: |
-        echo "🔨 Building and deploying all services..."
-        docker compose up --build -d --remove-orphans
-    
-    - name: Verify deployment
-      run: |
-        echo "🔍 Verifying deployment..."
-        # Give the app a few seconds to become healthy before checking
-        sleep 15 
-        
-        if docker compose ps | grep -q "Up"; then
-          echo "✅ All containers are running."
-        else
-          echo "❌ Container startup failed. Checking logs..."
-          docker compose logs
-          exit 1
-        fi
-
-        if curl --fail http://localhost:8080/health > /dev/null 2>&1; then
-          echo "✅ Health check passed on localhost:8080."
-        else
-          echo "❌ Health check on localhost:8080 failed. Checking logs..."
-          docker compose logs nginx
-          docker compose logs portfolio-blue
-          exit 1
-        fi
-    
-    - name: Show deployment info
-      run: |
-        echo "🚀 Website deployed successfully!"
-        echo "📅 Deployment time: $(date)"
-        
-        echo ""
         echo "📊 Final Container Status:"
         docker compose ps

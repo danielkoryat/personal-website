@@ -1,5 +1,4 @@
 services:
-  # Blue environment for portfolio
   portfolio-blue:
     build: 
       context: .
@@ -18,7 +17,6 @@ services:
     networks:
       - portfolio-network
 
-  # Green environment for portfolio (initially inactive)
   portfolio-green:
     build: 
       context: .
@@ -36,25 +34,18 @@ services:
       start_period: 40s
     networks:
       - portfolio-network
-    profiles:
-      - inactive
 
-  # Nginx reverse proxy
   nginx:
     image: nginx:alpine
     container_name: portfolio-nginx
     ports:
-      # Expose on 8080 for local testing
       - "8080:80" 
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
-    depends_on:
-      - portfolio-blue
     restart: unless-stopped
     networks:
       - portfolio-network
       
-  # Cloudflare Tunnel (Now managed by Docker Compose)
   cloudflared:
     image: cloudflare/cloudflared:latest
     container_name: cloudflare-tunnel
