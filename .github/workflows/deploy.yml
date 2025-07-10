@@ -46,9 +46,11 @@ jobs:
 
     - name: 6. Build and Deploy Standby Environment (${{ env.DEPLOY_SLOT }})
       run: |
-        echo "🔨 Building and deploying the ${{ env.DEPLOY_SLOT }} container..."
-        # The --no-cache flag is crucial here to force a fresh build
-        docker compose up --build --no-cache -d "portfolio-${{ env.DEPLOY_SLOT }}"
+        echo "🔨 Building the ${{ env.DEPLOY_SLOT }} container without cache..."
+        docker compose build --no-cache "portfolio-${{ env.DEPLOY_SLOT }}"
+        
+        echo "🚀 Starting the ${{ env.DEPLOY_SLOT }} container..."
+        docker compose up -d "portfolio-${{ env.DEPLOY_SLOT }}"
 
     - name: 7. Wait for New Environment to be Healthy
       run: |
