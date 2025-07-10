@@ -9,7 +9,7 @@ services:
       - NODE_ENV=production
       - NEXT_TELEMETRY_DISABLED=1
     healthcheck:
-      test: ["CMD", "curl", "--fail", "http://localhost:3000/api/health"]
+      test: ["CMD", "curl", "--fail", "http://127.0.0.1:3000/api/health"]
       interval: 15s
       timeout: 10s
       retries: 5
@@ -27,7 +27,7 @@ services:
       - NODE_ENV=production
       - NEXT_TELEMETRY_DISABLED=1
     healthcheck:
-      test: ["CMD", "curl", "--fail", "http://localhost:3000/api/health"]
+      test: ["CMD", "curl", "--fail", "http://127.0.0.1:3000/api/health"]
       interval: 15s
       timeout: 10s
       retries: 5
