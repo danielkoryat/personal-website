@@ -18,12 +18,18 @@ jobs:
     - name: 2. Setup Docker Buildx
       uses: docker/setup-buildx-action@v3
     
-    - name: 3. Start Core Services
+    - name: 3. Clean Up Old Docker Images
+      run: |
+        echo "🧹 Cleaning up old images to ensure a fresh build..."
+        docker compose down --rmi local -t 0 || true
+        docker image prune -f
+
+    - name: 4. Start Core Services
       run: |
         echo "🌐 Ensuring nginx and cloudflared are running before deployment..."
         docker compose up -d nginx cloudflared
 
-    - name: 4. Determine Deployment Slots
+    - name: 5. Determine Deployment Slots
       id: slots
       run: |
         if grep -q "server daniel-koryat-portfolio-green:3000 backup;" nginx.conf; then
@@ -35,18 +41,19 @@ jobs:
         fi
         echo "Live environment is: ${LIVE_SLOT}"
         echo "Deploying to: ${DEPLOY_SLOT}"
-        # Make these variables available to subsequent steps
         echo "LIVE_SLOT=${LIVE_SLOT}" >> $GITHUB_ENV
         echo "DEPLOY_SLOT=${DEPLOY_SLOT}" >> $GITHUB_ENV
 
-    - name: 5. Build and Deploy Standby Environment (${{ env.DEPLOY_SLOT }})
+    - name: 6. Build and Deploy Standby Environment (${{ env.DEPLOY_SLOT }})
       run: |
         echo "🔨 Building and deploying the ${{ env.DEPLOY_SLOT }} container..."
-        docker compose up --build -d "portfolio-${{ env.DEPLOY_SLOT }}"
+        # The --no-cache flag is crucial here to force a fresh build
+        docker compose up --build --no-cache -d "portfolio-${{ env.DEPLOY_SLOT }}"
 
-    - name: 6. Wait for New Environment to be Healthy
+    - name: 7. Wait for New Environment to be Healthy
       run: |
         CONTAINER_NAME="daniel-koryat-portfolio-${{ env.DEPLOY_SLOT }}"
+        SERVICE_NAME="portfolio-${{ env.DEPLOY_SLOT }}"
         echo "🔍 Waiting for ${CONTAINER_NAME} to become healthy..."
         for i in {1..30}; do
           HEALTH_STATUS=$(docker inspect --format '{{.State.Health.Status}}' ${CONTAINER_NAME} 2>/dev/null || echo "starting")
@@ -58,10 +65,10 @@ jobs:
           sleep 10
         done
         echo "❌ ${CONTAINER_NAME} failed to become healthy. Aborting."
-        docker compose logs ${CONTAINER_NAME}
+        docker compose logs ${SERVICE_NAME}
         exit 1
 
-    - name: 7. Switch Nginx Traffic to New Environment
+    - name: 8. Switch Nginx Traffic to New Environment
       run: |
         echo "🔄 Switching Nginx traffic from ${{ env.LIVE_SLOT }} to ${{ env.DEPLOY_SLOT }}..."
         sed -i "s/server daniel-koryat-portfolio-${{ env.LIVE_SLOT }}:3000;/server daniel-koryat-portfolio-${{ env.LIVE_SLOT }}:3000 backup;/" nginx.conf
@@ -71,12 +78,12 @@ jobs:
         docker compose exec nginx nginx -s reload
         echo "✅ Traffic switched successfully."
 
-    - name: 8. Stop Old Environment (${{ env.LIVE_SLOT }})
+    - name: 9. Stop Old Environment (${{ env.LIVE_SLOT }})
       run: |
         echo "🛑 Stopping the old ${{ env.LIVE_SLOT }} container..."
         docker compose stop "portfolio-${{ env.LIVE_SLOT }}"
 
-    - name: 9. Show Final Status
+    - name: 10. Show Final Status
       run: |
         echo "🎉 Deployment complete. ${{ env.DEPLOY_SLOT }} is now live."
         echo "📊 Final Container Status:"
