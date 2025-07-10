@@ -3,7 +3,7 @@
   "title": "Backend Web Developer & AWS Cloud Specialist",
   "subtitle": "Building scalable AI-powered systems with Python, FastAPI, and AWS",
   "description": "Backend Web Developer specializing in Python/FastAPI, AWS cloud services, and AI/ML systems. Currently developing AI-powered backend platforms with microservices architecture.",
-  "intro": "I'm Daniel—a Python/FastAPI backend specialist currently developing AI-powered systems for Sidekick Wellness. I build scalable microservices on AWS, implement RAG systems with LangChain, and optimize performance with Redis caching strategies.",
+  "intro": "I'm Daniel, a Python/FastAPI backend specialist currently developing AI-powered systems for Sidekick Wellness. I build scalable microservices on AWS, implement RAG systems with LangChain, and optimize performance with Redis caching strategies.",
   "contact": {
     "email": "dan.koryat@gmail.com",
     "phone": "647-947-8332",
