@@ -1,273 +1,91 @@
-# Daniel Koryat - Personal Portfolio
+# Hey, I'm Daniel 👋
 
-A modern, responsive personal website built with Next.js, TypeScript, and TailwindCSS. Features a clean design, smooth animations, and easy content management through JSON-based CMS.
-
-## 🚀 Features
-
-- **Modern Design**: Clean, professional design with dark/light mode support
-- **Responsive**: Fully responsive across all devices
-- **Animations**: Smooth scroll-triggered animations using Framer Motion
-- **Content Management**: Easy-to-update JSON-based CMS
-- **SEO Optimized**: Meta tags, Open Graph, and structured data
-- **Performance**: Optimized for speed with Next.js Image optimization
-- **Accessibility**: ARIA labels and keyboard navigation support
-
-## 🛠 Tech Stack
-
-- **Framework**: Next.js 14 with App Router
-- **Language**: TypeScript
-- **Styling**: TailwindCSS
-- **Animations**: Framer Motion
-- **Icons**: Lucide React
-- **Theme**: Next-themes for dark/light mode
-- **Deployment**: Vercel-ready
-
-## 📁 Project Structure
-
-```
-├── app/                    # Next.js App Router
-│   ├── layout.tsx         # Root layout with theme provider
-│   ├── page.tsx           # Homepage
-│   └── globals.css        # Global styles
-├── components/            # React components
-│   ├── ui/               # Reusable UI components
-│   ├── header.tsx        # Navigation header
-│   ├── hero.tsx          # Hero section
-│   ├── skills.tsx        # Skills showcase
-│   ├── experience.tsx    # Experience timeline
-│   ├── projects.tsx      # Projects gallery
-│   └── contact.tsx       # Contact form
-├── data/                 # Content management
-│   └── site-config.json  # Main content file
-├── lib/                  # Utility functions
-│   └── utils.ts          # Helper functions
-├── types/                # TypeScript definitions
-│   └── index.ts          # Type interfaces
-└── public/               # Static assets
-```
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- Node.js 18+ 
-- npm or yarn
-
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone <your-repo-url>
-   cd personal-website
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   # or
-   yarn install
-   ```
-
-3. **Run the development server**
-   ```bash
-   npm run dev
-   # or
-   yarn dev
-   ```
-
-4. **Open your browser**
-   Navigate to [http://localhost:3000](http://localhost:3000)
-
-## 📝 Content Management
-
-### Updating Personal Information
-
-Edit `data/site-config.json` to update:
-
-- **Personal Details**: Name, title, subtitle, intro
-- **Contact Information**: Email, phone, location, social links
-- **Skills**: Add/remove skills with proficiency levels
-- **Experience**: Update job history and achievements
-- **Projects**: Add new projects with descriptions and links
-- **Education**: Update education and certifications
-
-### Example: Adding a New Skill
-
-```json
-{
-  "name": "New Technology",
-  "category": "backend",
-  "proficiency": 85,
-  "yearsOfExperience": 2,
-  "description": "Description of the skill",
-  "certifications": ["Certification Name"]
-}
-```
-
-### Example: Adding a New Project
-
-```json
-{
-  "id": "unique-project-id",
-  "title": "Project Title",
-  "description": "Short description",
-  "longDescription": "Detailed project description",
-  "imageUrl": "https://images.unsplash.com/...",
-  "technologies": ["Tech1", "Tech2"],
-  "githubUrl": "https://github.com/...",
-  "liveUrl": "https://project-url.com",
-  "featured": false,
-  "category": "backend"
-}
-```
-
-## 🎨 Customization
-
-### Colors and Theme
-
-Update `tailwind.config.js` to customize:
-
-- **Color Palette**: Primary, secondary, and accent colors
-- **Fonts**: Custom font families
-- **Animations**: Custom keyframes and animations
-
-### Styling
-
-- **Global Styles**: Edit `app/globals.css`
-- **Component Styles**: Use TailwindCSS classes in components
-- **Custom CSS**: Add custom CSS in the appropriate component files
-
-## 🚀 Deployment
-
-### Vercel (Recommended)
-
-1. **Push to GitHub**
-   ```bash
-   git add .
-   git commit -m "Initial commit"
-   git push origin main
-   ```
-
-2. **Deploy to Vercel**
-   - Connect your GitHub repository to Vercel
-   - Vercel will automatically detect Next.js and deploy
-   - Your site will be available at `https://your-project.vercel.app`
-
-### Environment Variables
-
-#### For Local Development
-
-Create `.env.local` for local development:
-
-```env
-# Add any environment variables here
-NEXT_PUBLIC_SITE_URL=https://your-domain.com
-
-# Email Configuration for Contact Form (Local Development Only)
-# For production, use GitHub Secrets (see GITHUB_SECRETS_SETUP.md)
-EMAIL_USER=your-email@gmail.com
-EMAIL_PASS=your-gmail-app-password
-```
-
-#### For Production Deployment
-
-**Use GitHub Secrets for better security!** See `GITHUB_SECRETS_SETUP.md` for detailed instructions.
-
-1. **Enable 2-Factor Authentication** on your Gmail account
-2. **Generate an App Password**:
-   - Go to Google Account settings
-   - Security → 2-Step Verification → App passwords
-   - Generate a password for "Mail"
-3. **Add GitHub Secrets**:
-   - Go to your repository Settings → Secrets and variables → Actions
-   - Add `EMAIL_USER` with your Gmail address
-   - Add `EMAIL_PASS` with the generated app password
-
-**Security Benefits:**
-- ✅ Secrets are encrypted and never exposed in logs
-- ✅ No need to commit sensitive data to your repository
-- ✅ Secrets can be rotated without code changes
-- ✅ Different secrets for different environments
-
-### Resume Upload
-
-1. **Add your resume files** to the `public/resumes/` directory
-2. **Naming convention**: Include "resume" in the filename
-   - `resume.pdf` for PDF format
-   - `resume.docx` for Word format
-3. **Files will be automatically available** for download via the contact form
-
-### Custom Domain
-
-1. **Add custom domain in Vercel dashboard**
-2. **Update metadata in `app/layout.tsx`**
-3. **Update Open Graph URLs**
-
-## 📱 Performance Optimization
-
-### Images
-
-- Use Next.js `Image` component for optimized images
-- Place images in `public/` directory
-- Use appropriate image formats (WebP, AVIF)
-
-### Code Splitting
-
-- Components are automatically code-split by Next.js
-- Use dynamic imports for heavy components
-
-### SEO
-
-- Update meta tags in `app/layout.tsx`
-- Add structured data for better search results
-- Optimize images with alt text
-
-## 🔧 Development
-
-### Available Scripts
-
-```bash
-npm run dev          # Start development server
-npm run build        # Build for production
-npm run start        # Start production server
-npm run lint         # Run ESLint
-npm run type-check   # Run TypeScript check
-```
-
-### Code Quality
-
-- **TypeScript**: Strict mode enabled
-- **ESLint**: Next.js recommended rules
-- **Prettier**: Code formatting (recommended)
-
-### Git Workflow
-
-1. Create feature branch
-2. Make changes
-3. Test locally
-4. Commit with descriptive message
-5. Push and create pull request
-
-## 📄 License
-
-This project is open source and available under the [MIT License](LICENSE).
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
-
-## 📞 Support
-
-For questions or support:
-
-- **Email**: dan.koryat@gmail.com
-- **Phone**: 647-947-8332
-- **Location**: Toronto, ON
+Welcome to my personal website! I'm a backend developer with professional experience building AI-powered systems and scalable microservices. Currently, I work at Sidekick Platform, focusing on modern cloud and AI infrastructure.
 
 ---
 
-Built with ❤️ by Daniel Koryat 
+## About This Project
+
+This website is more than just a portfolio—it's a full-stack, production-grade template for anyone who wants to self-host their own personal website on their own server. The architecture is designed for reliability, scalability, and easy DevOps automation.
+
+### Tech Stack & Architecture
+
+- **Frontend & Backend:** Next.js 14 (App Router, TypeScript)
+- **Styling:** TailwindCSS, Framer Motion for animations
+- **Email:** Nodemailer (contact form, no third-party SaaS required)
+- **Data:** JSON-based CMS (easy to edit, no database needed)
+- **Containerization:** Docker & Docker Compose
+- **Web Server:** Nginx (reverse proxy, blue/green deployment)
+- **CI/CD:** GitHub Actions (self-hosted runner)
+- **Cloudflare Tunnel:** For secure public access (no open ports required)
+
+### How the Server Runs
+
+- The site is built and deployed using Docker Compose.
+- Nginx handles HTTPS, reverse proxy, and zero-downtime blue/green deployments.
+- A self-hosted GitHub Actions runner on your server automates deployments on every push to `main`.
+- Cloudflare Tunnel exposes your site securely to the internet, even behind NAT/firewall.
+
+---
+
+## Use This as Your Own Self-Hosted Template
+
+You can fork this repo and use it as a starting point for your own self-hosted portfolio or personal site. All configuration is handled via environment variables and simple JSON files.
+
+### Quick Start
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/danielkoryat/personal-website.git
+   cd personal-website
+   ```
+2. **Edit your content**
+   - Update `data/site-config.json` with your info, experience, and projects.
+3. **Set up environment variables**
+   - Create a `.env.local` for local dev, or use GitHub Secrets for production:
+     - `EMAIL_USER` (Gmail address for contact form)
+     - `EMAIL_PASS` (Gmail app password)
+     - `CLOUDFLARED_TOKEN` (Cloudflare Tunnel token)
+     - `NEXT_PUBLIC_SITE_URL` (your public site URL)
+4. **Build and run locally**
+   ```bash
+   npm install
+   npm run dev
+   # or use Docker:
+   docker compose up --build
+   ```
+5. **Set up your self-hosted server**
+   - Install Docker, Docker Compose, and a GitHub Actions runner on your server.
+   - Add your secrets to your GitHub repo (Settings > Secrets > Actions).
+   - Push to `main` to trigger a full blue/green deployment.
+
+### Deployment & Blue/Green Zero Downtime
+
+- The included GitHub Actions workflow (`.github/workflows/deploy.yml`) automates:
+  - Building the site
+  - Deploying to a new Docker container (blue/green)
+  - Switching Nginx upstreams with zero downtime
+  - Stopping the old container
+
+### Required Environment Variables
+
+- `EMAIL_USER` — Gmail address for contact form
+- `EMAIL_PASS` — Gmail app password (see Google App Passwords)
+- `CLOUDFLARED_TOKEN` — Cloudflare Tunnel token for secure public access
+- `NEXT_PUBLIC_SITE_URL` — Your public site URL
+
+### Why Self-Host?
+
+- Full control over your data and deployment
+- No monthly SaaS fees
+- Use as a learning template for Docker, CI/CD, and modern web dev
+- Easily extensible for blogs, portfolios, or even SaaS landing pages
+
+---
+
+## Questions or Want to Connect?
+
+- [LinkedIn](https://www.linkedin.com/in/daniel-koryat)
+- [GitHub](https://github.com/danielkoryat)
+
+Feel free to fork, star, or open an issue if you have questions or want to contribute! 

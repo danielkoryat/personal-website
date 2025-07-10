@@ -2,7 +2,16 @@
 
 import { motion } from "framer-motion";
 import { useInView } from "react-intersection-observer";
-import { Mail, Phone, MapPin, Github, Linkedin, Send, Download, FileText } from "lucide-react";
+import {
+  Mail,
+  Phone,
+  MapPin,
+  Github,
+  Linkedin,
+  Send,
+  Download,
+  FileText,
+} from "lucide-react";
 import { Button } from "./ui/button";
 import { getSiteConfig } from "@/lib/utils";
 import { useState } from "react";
@@ -16,28 +25,28 @@ export function Contact() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<{
-    type: 'success' | 'error' | null;
+    type: "success" | "error" | null;
     message: string;
-  }>({ type: null, message: '' });
+  }>({ type: null, message: "" });
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setSubmitStatus({ type: null, message: '' });
+    setSubmitStatus({ type: null, message: "" });
 
     const formData = new FormData(e.currentTarget);
     const data = {
-      name: formData.get('name') as string,
-      email: formData.get('email') as string,
-      subject: formData.get('subject') as string,
-      message: formData.get('message') as string,
+      name: formData.get("name") as string,
+      email: formData.get("email") as string,
+      subject: formData.get("subject") as string,
+      message: formData.get("message") as string,
     };
 
     try {
-      const response = await fetch('/api/contact', {
-        method: 'POST',
+      const response = await fetch("/api/contact", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(data),
       });
@@ -46,34 +55,37 @@ export function Contact() {
 
       if (response.ok) {
         setSubmitStatus({
-          type: 'success',
-          message: 'Message sent successfully! I\'ll get back to you soon.',
+          type: "success",
+          message: "Message sent successfully! I'll get back to you soon.",
         });
         e.currentTarget.reset();
       } else {
         setSubmitStatus({
-          type: 'error',
-          message: result.error || 'Failed to send message. Please try again.',
+          type: "error",
+          message: result.error || "Failed to send message. Please try again.",
         });
       }
     } catch (error) {
+      // Check if the error is actually a network error or just a response parsing issue
+      console.error("Contact form error:", error);
       setSubmitStatus({
-        type: 'error',
-        message: 'Network error. Please check your connection and try again.',
+        type: "error",
+        message:
+          "There was an issue processing your request. Please try again.",
       });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleResumeDownload = async (format: 'pdf' | 'docx') => {
+  const handleResumeDownload = async (format: "pdf" | "docx") => {
     try {
       const response = await fetch(`/api/resume?format=${format}`);
-      
+
       if (response.ok) {
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
+        const a = document.createElement("a");
         a.href = url;
         a.download = `Daniel_Koryat_Resume.${format}`;
         document.body.appendChild(a);
@@ -81,10 +93,12 @@ export function Contact() {
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
       } else {
-        alert(`Resume not available in ${format.toUpperCase()} format. Please try PDF.`);
+        alert(
+          `Resume not available in ${format.toUpperCase()} format. Please try PDF.`
+        );
       }
     } catch (error) {
-      alert('Failed to download resume. Please try again.');
+      alert("Failed to download resume. Please try again.");
     }
   };
 
@@ -123,9 +137,10 @@ export function Contact() {
                 Let&apos;s Connect
               </h3>
               <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-6 sm:mb-8 leading-relaxed">
-                I&apos;m currently available for freelance work and full-time
-                opportunities. Whether you have a question or just want to say
-                hi, I&apos;ll try my best to get back to you!
+                I&apos;m always open to discussing exciting projects and
+                collaboration opportunities. Whether you have a technical
+                question, want to explore potential partnerships, or just want
+                to connect, I&apos;d love to hear from you!
               </p>
             </div>
 
@@ -185,22 +200,24 @@ export function Contact() {
                 Follow Me
               </h4>
               <div className="flex space-x-3 sm:space-x-4">
-                {config.contact.github && (
+                {config.contact.githubUrl && (
                   <a
-                    href={`https://github.com/${config.contact.github}`}
+                    href={config.contact.githubUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-9 h-9 sm:w-10 sm:h-10 bg-gray-900 dark:bg-gray-700 rounded-lg flex items-center justify-center text-white hover:bg-gray-800 dark:hover:bg-gray-600 transition-colors"
+                    title="GitHub Profile"
                   >
                     <Github className="w-4 h-4 sm:w-5 sm:h-5" />
                   </a>
                 )}
-                {config.contact.linkedin && (
+                {config.contact.linkedinUrl && (
                   <a
-                    href={`https://linkedin.com/in/${config.contact.linkedin}`}
+                    href={config.contact.linkedinUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-9 h-9 sm:w-10 sm:h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white hover:bg-blue-700 transition-colors"
+                    title="LinkedIn Profile"
                   >
                     <Linkedin className="w-4 h-4 sm:w-5 sm:h-5" />
                   </a>
@@ -215,14 +232,14 @@ export function Contact() {
               </h4>
               <div className="space-y-2">
                 <button
-                  onClick={() => handleResumeDownload('pdf')}
+                  onClick={() => handleResumeDownload("pdf")}
                   className="w-full flex items-center justify-center space-x-2 bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg text-sm transition-colors"
                 >
                   <FileText className="w-4 h-4" />
                   <span>Download PDF</span>
                 </button>
                 <button
-                  onClick={() => handleResumeDownload('docx')}
+                  onClick={() => handleResumeDownload("docx")}
                   className="w-full flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-sm transition-colors"
                 >
                   <Download className="w-4 h-4" />
@@ -237,10 +254,10 @@ export function Contact() {
                 Current Status
               </h4>
               <p className="text-blue-800 dark:text-blue-200 text-xs sm:text-sm">
-                🟢 Available for new opportunities
+                Backend Developer at Sidekick Platform
               </p>
               <p className="text-blue-700 dark:text-blue-300 text-xs sm:text-sm mt-1">
-                Currently working on AI backend platform at Sidekick Platform
+                Professional experience building AI backend infrastructure
               </p>
             </div>
           </motion.div>
@@ -261,9 +278,9 @@ export function Contact() {
               {submitStatus.type && (
                 <div
                   className={`p-3 rounded-lg text-sm ${
-                    submitStatus.type === 'success'
-                      ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-800 dark:text-green-200'
-                      : 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200'
+                    submitStatus.type === "success"
+                      ? "bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-800 dark:text-green-200"
+                      : "bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200"
                   }`}
                 >
                   {submitStatus.message}
@@ -339,14 +356,14 @@ export function Contact() {
                 />
               </div>
 
-              <Button 
-                type="submit" 
-                size="lg" 
-                className="w-full group" 
+              <Button
+                type="submit"
+                size="lg"
+                className="w-full group"
                 disabled={isSubmitting}
               >
                 <Send className="w-4 h-4 sm:w-5 sm:h-5 mr-2 group-hover:animate-bounce" />
-                {isSubmitting ? 'Sending...' : 'Send Message'}
+                {isSubmitting ? "Sending..." : "Send Message"}
               </Button>
             </form>
           </motion.div>

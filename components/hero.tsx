@@ -60,6 +60,27 @@ export function Hero() {
               >
                 {config.intro}
               </motion.p>
+
+              {/* Professional highlights */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.7, duration: 0.8 }}
+                className="flex flex-wrap justify-center gap-2 mt-4"
+              >
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200">
+                  🏢 Enterprise Backend
+                </span>
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200">
+                  🤖 AI/ML Systems
+                </span>
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-200">
+                  ☁️ AWS Cloud
+                </span>
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-200">
+                  🚀 Microservices
+                </span>
+              </motion.div>
             </div>
 
             {/* Current role highlight */}
@@ -70,7 +91,10 @@ export function Hero() {
               className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mx-4 sm:mx-0"
             >
               <p className="text-blue-800 dark:text-blue-200 font-medium text-sm sm:text-base">
-                Currently developing AI backend platform for Sidekick Platform
+                Backend Developer at Sidekick Platform
+              </p>
+              <p className="text-blue-700 dark:text-blue-300 text-xs sm:text-sm mt-1">
+                Professional experience building AI backend infrastructure
               </p>
             </motion.div>
 

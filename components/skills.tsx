@@ -184,6 +184,54 @@ export function Skills() {
             </div>
           </div>
         </motion.div>
+
+        {/* Professional Achievements */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.8, delay: 1.0 }}
+          className="mt-8 sm:mt-12"
+        >
+          <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-xl p-6 sm:p-8">
+            <h3 className="text-lg sm:text-xl font-semibold mb-6 text-gray-900 dark:text-white text-center">
+              Professional Highlights
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-center">
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
+                <div className="text-2xl sm:text-3xl font-bold text-green-600 dark:text-green-400 mb-2">
+                  2+
+                </div>
+                <div className="text-gray-600 dark:text-gray-400 text-sm">
+                  Years Experience
+                </div>
+              </div>
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
+                <div className="text-2xl sm:text-3xl font-bold text-blue-600 dark:text-blue-400 mb-2">
+                  20+
+                </div>
+                <div className="text-gray-600 dark:text-gray-400 text-sm">
+                  Technologies
+                </div>
+              </div>
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
+                <div className="text-2xl sm:text-3xl font-bold text-purple-600 dark:text-purple-400 mb-2">
+                  95%
+                </div>
+                <div className="text-gray-600 dark:text-gray-400 text-sm">
+                  Python Proficiency
+                </div>
+              </div>
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
+                <div className="text-2xl sm:text-3xl font-bold text-orange-600 dark:text-orange-400 mb-2">
+                  🏢
+                </div>
+                <div className="text-gray-600 dark:text-gray-400 text-sm">
+                  Enterprise Focus
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
       </div>
     </section>
   );

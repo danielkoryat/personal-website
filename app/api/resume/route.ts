@@ -11,15 +11,27 @@ export async function GET(request: NextRequest) {
     const files = await fs.readdir(resumeDir);
 
     // Look for resume files with the requested format
-    const resumeFile = files.find(
+    let resumeFile = files.find(
       (file) =>
         file.toLowerCase().includes("resume") &&
         file.toLowerCase().endsWith(format.toLowerCase())
     );
 
+    // If DOCX is requested but not found, try to find any DOCX file
+    if (!resumeFile && format.toLowerCase() === "docx") {
+      resumeFile = files.find((file) => file.toLowerCase().endsWith(".docx"));
+    }
+
+    // If PDF is requested but not found, try to find any PDF file
+    if (!resumeFile && format.toLowerCase() === "pdf") {
+      resumeFile = files.find((file) => file.toLowerCase().endsWith(".pdf"));
+    }
+
     if (!resumeFile) {
       return NextResponse.json(
-        { error: `Resume not found in ${format.toUpperCase()} format` },
+        {
+          error: `Resume not found in ${format.toUpperCase()} format. Please upload a resume file to the public/resumes/ directory.`,
+        },
         { status: 404 }
       );
     }
@@ -28,8 +40,24 @@ export async function GET(request: NextRequest) {
     const fileBuffer = await fs.readFile(filePath);
 
     const headers = new Headers();
-    headers.set("Content-Type", `application/${format.toLowerCase()}`);
-    headers.set("Content-Disposition", `attachment; filename="${resumeFile}"`);
+
+    // Set appropriate content type based on file extension
+    const fileExtension = resumeFile.split(".").pop()?.toLowerCase();
+    if (fileExtension === "pdf") {
+      headers.set("Content-Type", "application/pdf");
+    } else if (fileExtension === "docx") {
+      headers.set(
+        "Content-Type",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      );
+    } else {
+      headers.set("Content-Type", "application/octet-stream");
+    }
+
+    headers.set(
+      "Content-Disposition",
+      `attachment; filename="Daniel_Koryat_Resume.${fileExtension}"`
+    );
 
     return new NextResponse(fileBuffer, {
       status: 200,
@@ -38,7 +66,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error("Resume download error:", error);
     return NextResponse.json(
-      { error: "Failed to download resume" },
+      { error: "Failed to download resume. Please try again later." },
       { status: 500 }
     );
   }

@@ -3,13 +3,15 @@
   "title": "Backend Web Developer & AWS Cloud Specialist",
   "subtitle": "Building scalable AI-powered systems with Python, FastAPI, and AWS",
   "description": "Backend Web Developer specializing in Python/FastAPI, AWS cloud services, and AI/ML systems. Currently developing AI-powered backend platforms with microservices architecture.",
-  "intro": "I'm Daniel, a Python/FastAPI backend specialist currently developing AI-powered systems for Sidekick Platform. I build scalable microservices on AWS, implement RAG systems with LangChain, and optimize performance with Redis caching strategies.",
+  "intro": "I'm Daniel, a backend developer with professional experience building AI-powered systems and scalable microservices on AWS. Currently working as a backend developer at Sidekick Platform, focusing on modern cloud and AI infrastructure.",
   "contact": {
     "email": "dan.koryat@gmail.com",
     "phone": "647-947-8332",
     "location": "Toronto, ON",
     "github": "danielkoryat",
-    "linkedin": "danielkoryat"
+    "linkedin": "danielkoryat",
+    "githubUrl": "https://github.com/danielkoryat",
+    "linkedinUrl": "https://www.linkedin.com/in/daniel-koryat"
   },
   "skills": [
     {
@@ -156,12 +158,12 @@
   "experience": [
     {
       "id": "sidekick-platform",
-      "title": "Backend Web Developer",
+      "title": "Backend Developer",
       "company": "Sidekick Platform",
       "location": "Remote",
       "startDate": "2024-02",
       "current": true,
-      "description": "Developing AI-powered backend platform with microservices architecture",
+      "description": "Professional experience building AI backend platform with microservices architecture",
       "technologies": [
         "Python",
         "FastAPI",
@@ -172,12 +174,13 @@
         "Terraform"
       ],
       "achievements": [
-        "Built scalable microservices architecture for AI backend platform",
+        "Built scalable microservices infrastructure for AI backend platform",
         "Implemented RAG (Retrieval-Augmented Generation) systems using LangChain and Pinecone",
-        "Optimized performance with Redis caching strategies",
+        "Optimized system performance with Redis caching strategies and database optimization",
         "Managed AWS infrastructure using Terraform for Infrastructure as Code",
         "Collaborated with distributed teams across U.S. and India",
-        "Integrated multiple data sources for comprehensive AI training"
+        "Integrated multiple data sources and APIs for comprehensive AI training and inference",
+        "Implemented CI/CD pipelines and automated testing for production deployments"
       ]
     }
   ],
