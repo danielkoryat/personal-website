@@ -25,8 +25,8 @@ echo "🌐 Ensuring core services (nginx, cloudflared) are up..."
 docker compose up -d nginx cloudflared
 
 # 2. Determine which environment is live and which is the target for deployment
-# We check which server is NOT the backup in nginx.conf
-if grep -q "server daniel-koryat-portfolio-green:3000 backup;" nginx.conf; then
+# We check which server is active in active_upstream.conf
+if grep -q "daniel-koryat-portfolio-blue" active_upstream.conf; then
     LIVE_SLOT="blue"
     DEPLOY_SLOT="green"
 else
@@ -40,16 +40,18 @@ echo "  - Deploying To: ${DEPLOY_SLOT}"
 
 # 3. Build and deploy the new version to the standby slot
 echo "🔨 Building and deploying the ${DEPLOY_SLOT} container..."
-docker compose up --build -d "portfolio-${DEPLOY_SLOT}"
+docker compose up --build -d "daniel-koryat-portfolio-${DEPLOY_SLOT}"
 
 # 4. Wait for the new container to be healthy
 check_health "daniel-koryat-portfolio-${DEPLOY_SLOT}"
 
 # 5. Switch Nginx traffic to the newly deployed container
 echo "🔄 Switching Nginx traffic to ${DEPLOY_SLOT}..."
-# Use a temporary file to avoid issues with sed's in-place editing on different systems
-sed "s/server daniel-koryat-portfolio-${LIVE_SLOT}:3000/server daniel-koryat-portfolio-${LIVE_SLOT}:3000 backup/" nginx.conf > nginx.conf.tmp && mv nginx.conf.tmp nginx.conf
-sed "s/server daniel-koryat-portfolio-${DEPLOY_SLOT}:3000 backup;/server daniel-koryat-portfolio-${DEPLOY_SLOT}:3000;/" nginx.conf > nginx.conf.tmp && mv nginx.conf.tmp nginx.conf
+# Backup current config
+cp active_upstream.conf active_upstream.conf.backup
+
+# Atomically switch the upstream
+echo "set \$active_upstream daniel-koryat-portfolio-${DEPLOY_SLOT}:3000;" > active_upstream.conf
 
 # Gracefully reload Nginx to apply the new configuration with zero downtime
 docker compose exec nginx nginx -s reload
@@ -57,6 +59,6 @@ echo "✅ Traffic switched successfully."
 
 # 6. Stop the old live container, making it the new standby
 echo "🛑 Stopping the old ${LIVE_SLOT} container..."
-docker compose stop "portfolio-${LIVE_SLOT}"
+docker compose stop "daniel-koryat-portfolio-${LIVE_SLOT}"
 
 echo "🎉 Deployment complete. ${DEPLOY_SLOT} is now the live environment."

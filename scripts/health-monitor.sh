@@ -155,7 +155,7 @@ check_and_fix_application() {
         warning "No active application environment detected"
         send_alert "Application Down" "No active application environment detected, starting blue environment"
         
-        if docker-compose up -d portfolio-blue; then
+        if docker-compose up -d daniel-koryat-portfolio-blue; then
             success "Blue environment started successfully"
             return 0
         else
@@ -190,7 +190,7 @@ check_and_fix_application() {
         warning "Attempting to switch to $other_env environment"
         send_alert "Environment Switch" "Active environment $active_env is unhealthy, switching to $other_env"
         
-        if docker-compose up -d "portfolio-${other_env}"; then
+        if docker-compose up -d "daniel-koryat-portfolio-${other_env}"; then
             sleep 30
             if is_container_healthy "${PROJECT_NAME}-${other_env}"; then
                 # Switch nginx configuration

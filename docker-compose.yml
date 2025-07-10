@@ -1,5 +1,5 @@
 services:
-  portfolio-blue:
+  daniel-koryat-portfolio-blue:
     build: 
       context: .
       dockerfile: Dockerfile
@@ -19,7 +19,7 @@ services:
     networks:
       - portfolio-network
 
-  portfolio-green:
+  daniel-koryat-portfolio-green:
     build: 
       context: .
       dockerfile: Dockerfile
