@@ -1,11 +1,10 @@
 services:
-  portfolio:
+  # Blue environment for portfolio
+  portfolio-blue:
     build: 
       context: .
       dockerfile: Dockerfile
-    container_name: daniel-koryat-portfolio
-    ports:
-      - "8080:3000"
+    container_name: daniel-koryat-portfolio-blue
     restart: unless-stopped
     environment:
       - NODE_ENV=production
@@ -19,18 +18,50 @@ services:
     networks:
       - portfolio-network
 
+  # Green environment for portfolio (initially inactive)
+  portfolio-green:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: daniel-koryat-portfolio-green
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - NEXT_TELEMETRY_DISABLED=1
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - portfolio-network
+    profiles:
+      - inactive
+
+  # Nginx reverse proxy
   nginx:
     image: nginx:alpine
     container_name: portfolio-nginx
     ports:
-      - "80:80"
-      - "443:443"
+      # Expose on 8080 for local testing
+      - "8080:80" 
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./ssl:/etc/nginx/ssl:ro
     depends_on:
-      - portfolio
+      - portfolio-blue
     restart: unless-stopped
+    networks:
+      - portfolio-network
+      
+  # Cloudflare Tunnel (Now managed by Docker Compose)
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflare-tunnel
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run --token ${CLOUDFLARED_TOKEN}
+    depends_on:
+      - nginx
     networks:
       - portfolio-network
 
