@@ -46,7 +46,6 @@ You can fork this repo and use it as a starting point for your own self-hosted p
      - `EMAIL_USER` (Gmail address for contact form)
      - `EMAIL_PASS` (Gmail app password)
      - `CLOUDFLARED_TOKEN` (Cloudflare Tunnel token)
-     - `NEXT_PUBLIC_SITE_URL` (your public site URL)
 4. **Build and run locally**
    ```bash
    npm install
@@ -66,13 +65,6 @@ You can fork this repo and use it as a starting point for your own self-hosted p
   - Deploying to a new Docker container (blue/green)
   - Switching Nginx upstreams with zero downtime
   - Stopping the old container
-
-### Required Environment Variables
-
-- `EMAIL_USER` — Gmail address for contact form
-- `EMAIL_PASS` — Gmail app password (see Google App Passwords)
-- `CLOUDFLARED_TOKEN` — Cloudflare Tunnel token for secure public access
-- `NEXT_PUBLIC_SITE_URL` — Your public site URL
 
 ### Why Self-Host?
 
