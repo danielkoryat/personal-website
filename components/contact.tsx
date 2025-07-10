@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { getSiteConfig } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 
 export function Contact() {
   const config = getSiteConfig();
@@ -28,9 +28,19 @@ export function Contact() {
     type: "success" | "error" | null;
     message: string;
   }>({ type: null, message: "" });
+  const [mounted, setMounted] = useState(false);
+
+  const formRef = useRef<HTMLFormElement>(null);
+
+  // Prevent hydration issues
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!mounted) return;
+
     setIsSubmitting(true);
     setSubmitStatus({ type: null, message: "" });
 
@@ -58,7 +68,13 @@ export function Contact() {
           type: "success",
           message: "Message sent successfully! I'll get back to you soon.",
         });
-        e.currentTarget.reset();
+        // Use the ref instead of e.currentTarget for safer form reset
+        // Add a small delay to ensure the success message is shown before reset
+        setTimeout(() => {
+          if (formRef.current) {
+            formRef.current.reset();
+          }
+        }, 100);
       } else {
         setSubmitStatus({
           type: "error",
@@ -79,6 +95,8 @@ export function Contact() {
   };
 
   const handleResumeDownload = async (format: "pdf" | "docx") => {
+    if (!mounted) return;
+    
     try {
       const response = await fetch(`/api/resume?format=${format}`);
 
@@ -98,6 +116,7 @@ export function Contact() {
         );
       }
     } catch (error) {
+      console.error("Resume download error:", error);
       alert("Failed to download resume. Please try again.");
     }
   };
@@ -273,7 +292,24 @@ export function Contact() {
               Send a Message
             </h3>
 
-            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+            {!mounted && (
+              <div className="space-y-4 sm:space-y-6">
+                <div className="animate-pulse">
+                  <div className="h-4 bg-gray-200 dark:bg-gray-600 rounded mb-4"></div>
+                  <div className="h-4 bg-gray-200 dark:bg-gray-600 rounded mb-4"></div>
+                  <div className="h-4 bg-gray-200 dark:bg-gray-600 rounded mb-4"></div>
+                  <div className="h-32 bg-gray-200 dark:bg-gray-600 rounded mb-4"></div>
+                  <div className="h-12 bg-gray-200 dark:bg-gray-600 rounded"></div>
+                </div>
+              </div>
+            )}
+
+            {mounted && (
+              <form
+                onSubmit={handleSubmit}
+                className="space-y-4 sm:space-y-6"
+                ref={formRef}
+              >
               {/* Status Messages */}
               {submitStatus.type && (
                 <div
@@ -360,12 +396,13 @@ export function Contact() {
                 type="submit"
                 size="lg"
                 className="w-full group"
-                disabled={isSubmitting}
+                disabled={isSubmitting || !mounted}
               >
                 <Send className="w-4 h-4 sm:w-5 sm:h-5 mr-2 group-hover:animate-bounce" />
                 {isSubmitting ? "Sending..." : "Send Message"}
               </Button>
             </form>
+            )}
           </motion.div>
         </div>
       </div>

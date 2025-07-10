@@ -5,6 +5,7 @@ import { useInView } from "react-intersection-observer";
 import { ExternalLink, Github, Star } from "lucide-react";
 import Image from "next/image";
 import { getSiteConfig } from "@/lib/utils";
+import { useState, useEffect } from "react";
 
 export function Projects() {
   const config = getSiteConfig();
@@ -12,6 +13,37 @@ export function Projects() {
     triggerOnce: true,
     threshold: 0.1,
   });
+  const [mounted, setMounted] = useState(false);
+
+  // Prevent hydration issues
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <section id="projects" className="py-16 sm:py-20 bg-white dark:bg-gray-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12 sm:mb-16">
+            <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded mb-4 animate-pulse"></div>
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded max-w-2xl mx-auto animate-pulse"></div>
+          </div>
+          <div className="space-y-8 sm:space-y-12">
+            <div className="animate-pulse">
+              <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded-2xl"></div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="animate-pulse">
+                  <div className="h-48 bg-gray-200 dark:bg-gray-700 rounded-xl"></div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="projects" className="py-16 sm:py-20 bg-white dark:bg-gray-900">
@@ -110,6 +142,16 @@ export function Projects() {
                           alt={project.title}
                           fill
                           className="object-cover"
+                          onError={(e) => {
+                            // Fallback to a gradient background if image fails to load
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = "none";
+                            target.parentElement?.classList.add(
+                              "bg-gradient-to-br",
+                              "from-blue-400",
+                              "to-purple-600"
+                            );
+                          }}
                         />
                       </div>
                     </div>
@@ -136,6 +178,18 @@ export function Projects() {
                       alt={project.title}
                       fill
                       className="object-cover"
+                      onError={(e) => {
+                        // Fallback to a gradient background if image fails to load
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = "none";
+                        target.parentElement?.classList.add(
+                          "bg-gradient-to-br",
+                          "from-gray-200",
+                          "to-gray-300",
+                          "dark:from-gray-600",
+                          "dark:to-gray-700"
+                        );
+                      }}
                     />
                     <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center">
                       <div className="opacity-0 hover:opacity-100 transition-opacity duration-300 flex space-x-2">

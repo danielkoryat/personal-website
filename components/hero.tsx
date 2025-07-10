@@ -4,11 +4,19 @@ import { motion } from "framer-motion";
 import { Download, Mail, ChevronDown } from "lucide-react";
 import { Button } from "./ui/button";
 import { getSiteConfig } from "@/lib/utils";
+import { useState, useEffect } from "react";
 
 export function Hero() {
   const config = getSiteConfig();
+  const [mounted, setMounted] = useState(false);
+
+  // Prevent hydration issues
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const scrollToSection = (href: string) => {
+    if (!mounted) return;
     const element = document.querySelector(href);
     if (element) {
       element.scrollIntoView({ behavior: "smooth" });
@@ -119,6 +127,7 @@ export function Hero() {
                 size="lg"
                 className="group w-full sm:w-auto"
                 onClick={async () => {
+                  if (!mounted) return;
                   try {
                     const response = await fetch("/api/resume?format=pdf");
                     if (response.ok) {
@@ -137,6 +146,7 @@ export function Hero() {
                       );
                     }
                   } catch (error) {
+                    console.error("Resume download error:", error);
                     alert("Failed to download resume. Please try again.");
                   }
                 }}
