@@ -17,142 +17,137 @@
     {
       "name": "Python",
       "category": "backend",
-      "proficiency": 95,
-      "yearsOfExperience": 2,
       "description": "Core backend development language"
     },
     {
       "name": "FastAPI",
       "category": "backend",
-      "proficiency": 90,
-      "yearsOfExperience": 2,
       "description": "Modern async web framework"
     },
     {
       "name": "Pydantic",
       "category": "backend",
-      "proficiency": 85,
-      "yearsOfExperience": 2,
       "description": "Data validation and settings management"
     },
     {
       "name": "LangChain",
       "category": "ai-ml",
-      "proficiency": 80,
-      "yearsOfExperience": 1,
       "description": "AI/ML framework for RAG systems"
     },
     {
       "name": "Redis",
       "category": "backend",
-      "proficiency": 85,
-      "yearsOfExperience": 1,
       "description": "Caching and session management"
     },
     {
       "name": "MongoDB",
       "category": "backend",
-      "proficiency": 80,
-      "yearsOfExperience": 1,
       "description": "NoSQL database management"
+    },
+    {
+      "name": "PostgreSQL",
+      "category": "backend",
+      "description": "Relational database management"
     },
     {
       "name": "Pinecone",
       "category": "ai-ml",
-      "proficiency": 75,
-      "yearsOfExperience": 1,
       "description": "Vector database for embeddings"
     },
     {
       "name": "AWS Lambda",
       "category": "cloud",
-      "proficiency": 85,
-      "yearsOfExperience": 1,
       "description": "Serverless computing"
     },
     {
       "name": "AWS S3",
       "category": "cloud",
-      "proficiency": 90,
-      "yearsOfExperience": 1,
       "description": "Object storage service"
+    },
+    {
+      "name": "AWS MSK",
+      "category": "cloud",
+      "description": "Managed streaming for Apache Kafka"
+    },
+    {
+      "name": "AWS CloudFront",
+      "category": "cloud",
+      "description": "Content delivery network"
+    },
+    {
+      "name": "AWS Cognito",
+      "category": "cloud",
+      "description": "User authentication and authorization"
+    },
+    {
+      "name": "AWS DynamoDB",
+      "category": "cloud",
+      "description": "NoSQL database service"
     },
     {
       "name": "AWS API Gateway",
       "category": "cloud",
-      "proficiency": 80,
-      "yearsOfExperience": 1,
       "description": "API management and routing"
     },
     {
       "name": "AWS CloudWatch",
       "category": "cloud",
-      "proficiency": 75,
-      "yearsOfExperience": 1,
       "description": "Monitoring and logging"
     },
     {
       "name": "Terraform",
       "category": "cloud",
-      "proficiency": 80,
-      "yearsOfExperience": 1,
       "description": "Infrastructure as Code"
     },
     {
       "name": "React",
       "category": "frontend",
-      "proficiency": 70,
-      "yearsOfExperience": 1,
       "description": "Frontend development"
     },
     {
       "name": "TypeScript",
       "category": "frontend",
-      "proficiency": 75,
-      "yearsOfExperience": 1,
       "description": "Type-safe JavaScript"
     },
     {
       "name": "Next.js",
       "category": "frontend",
-      "proficiency": 70,
-      "yearsOfExperience": 1,
       "description": "React framework"
     },
     {
       "name": "TailwindCSS",
       "category": "frontend",
-      "proficiency": 80,
-      "yearsOfExperience": 1,
       "description": "Utility-first CSS framework"
     },
     {
       "name": "Git",
       "category": "tools",
-      "proficiency": 85,
-      "yearsOfExperience": 2,
       "description": "Version control"
     },
     {
       "name": "Docker",
       "category": "tools",
-      "proficiency": 75,
-      "yearsOfExperience": 1,
       "description": "Containerization"
     },
     {
       "name": "Kafka",
       "category": "backend",
-      "proficiency": 70,
-      "yearsOfExperience": 1,
       "description": "Distributed streaming platform"
     },
     {
       "name": "OpenTelemetry",
       "category": "backend",
-      "proficiency": 65,
-      "yearsOfExperience": 1,
       "description": "Observability framework"
+    },
+    {
+      "name": "Hebrew",
+      "category": "languages",
+      "description": "Native language"
+    },
+    {
+      "name": "English",
+      "category": "languages",
+      "description": "Fluent"
     }
   ],
   "experience": [
@@ -184,54 +179,6 @@
       ]
     }
   ],
-  "projects": [
-    {
-      "id": "sidekick-ai-platform",
-      "title": "Sidekick Platform AI Backend Platform",
-      "description": "AI-powered backend platform with RAG systems and microservices architecture",
-      "longDescription": "A comprehensive AI backend platform that leverages Retrieval-Augmented Generation (RAG) to provide intelligent responses. Built with microservices architecture for scalability, featuring Redis caching for performance optimization and AWS infrastructure managed through Terraform. The platform integrates multiple data sources and provides real-time AI-powered insights for platform applications.",
-      "imageUrl": "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&h=600&fit=crop",
-      "technologies": [
-        "Python",
-        "FastAPI",
-        "LangChain",
-        "Pinecone",
-        "Redis",
-        "AWS",
-        "Terraform",
-        "MongoDB"
-      ],
-      "featured": true,
-      "category": "ai-ml"
-    },
-    {
-      "id": "microservices-api",
-      "title": "Microservices API Gateway",
-      "description": "High-performance API gateway for distributed microservices",
-      "longDescription": "Designed and implemented a scalable API gateway that routes requests to multiple microservices. Features include authentication, rate limiting, request/response transformation, and comprehensive monitoring with OpenTelemetry. Built with FastAPI and deployed on AWS using containerized services.",
-      "imageUrl": "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800&h=600&fit=crop",
-      "technologies": [
-        "Python",
-        "FastAPI",
-        "AWS",
-        "Docker",
-        "OpenTelemetry",
-        "Redis"
-      ],
-      "featured": false,
-      "category": "backend"
-    },
-    {
-      "id": "rag-system",
-      "title": "RAG System with Vector Database",
-      "description": "Retrieval-Augmented Generation system using Pinecone and LangChain",
-      "longDescription": "Implemented a sophisticated RAG system that combines document retrieval with generative AI. Uses Pinecone vector database for efficient similarity search and LangChain for orchestrating the AI pipeline. Features include document ingestion, embedding generation, semantic search, and context-aware response generation.",
-      "imageUrl": "https://images.unsplash.com/photo-1676299251956-415a4d5e8599?w=800&h=600&fit=crop",
-      "technologies": ["Python", "LangChain", "Pinecone", "FastAPI", "OpenAI"],
-      "featured": false,
-      "category": "ai-ml"
-    }
-  ],
   "education": [
     {
       "id": "sela-college",
@@ -248,8 +195,6 @@
       "institution": "Harvard University (HarvardX)",
       "degree": "CS50x: Introduction to Computer Science",
       "field": "Computer Science",
-      "startDate": "2023-01",
-      "endDate": "2023-12",
       "description": "Comprehensive introduction to computer science and programming fundamentals",
       "certifications": ["CS50x Certificate"]
     },
@@ -258,8 +203,6 @@
       "institution": "Amazon Web Services",
       "degree": "Cloud Practitioner Essentials",
       "field": "Cloud Computing",
-      "startDate": "2023-06",
-      "endDate": "2023-08",
       "description": "AWS Cloud Practitioner certification covering core AWS services and cloud concepts",
       "certifications": ["AWS Cloud Practitioner"]
     }

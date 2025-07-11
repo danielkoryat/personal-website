@@ -26,6 +26,7 @@ export function getSkillCategoryColor(category: string): string {
     frontend: "bg-purple-500",
     "ai-ml": "bg-orange-500",
     tools: "bg-gray-500",
+    languages: "bg-indigo-500",
   };
   return colors[category as keyof typeof colors] || "bg-gray-500";
 }
@@ -37,6 +38,7 @@ export function getSkillCategoryLabel(category: string): string {
     frontend: "Frontend Development",
     "ai-ml": "AI/ML Systems",
     tools: "Tools & Methodology",
+    languages: "Languages",
   };
   return labels[category as keyof typeof labels] || category;
 }

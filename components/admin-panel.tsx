@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Edit, Save, X, Plus } from "lucide-react";
+import { Edit, Save, X } from "lucide-react";
 import { Button } from "./ui/button";
 import { getSiteConfig } from "@/lib/utils";
-import type { Skill, Project, Experience } from "@/types";
+import type { Skill, Experience } from "@/types";
 
 export function AdminPanel() {
   const [isOpen, setIsOpen] = useState(false);
@@ -88,58 +88,12 @@ export function AdminPanel() {
                       {skill.name}
                     </h4>
                     <span className="text-sm text-gray-500 dark:text-gray-400">
-                      {skill.proficiency}%
+                      {skill.category}
                     </span>
-                  </div>
-                  <div className="skill-bar">
-                    <div
-                      className="skill-progress"
-                      style={{ width: `${skill.proficiency}%` }}
-                    />
                   </div>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
                     {skill.description}
                   </p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Projects Section */}
-          <div>
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                Projects
-              </h3>
-              {!isEditing && (
-                <Button onClick={() => setIsEditing(true)} size="sm">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Project
-                </Button>
-              )}
-            </div>
-            <div className="grid md:grid-cols-2 gap-4">
-              {config.projects.map((project) => (
-                <div
-                  key={project.id}
-                  className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4"
-                >
-                  <h4 className="font-medium text-gray-900 dark:text-white mb-2">
-                    {project.title}
-                  </h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                    {project.description}
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {project.technologies.slice(0, 3).map((tech) => (
-                      <span
-                        key={tech}
-                        className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-                      >
-                        {tech}
-                      </span>
-                    ))}
-                  </div>
                 </div>
               ))}
             </div>

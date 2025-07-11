@@ -1,8 +1,6 @@
 export interface Skill {
   name: string;
-  category: "backend" | "cloud" | "frontend" | "ai-ml" | "tools";
-  proficiency: number; // 0-100
-  yearsOfExperience: number;
+  category: "backend" | "cloud" | "frontend" | "ai-ml" | "tools" | "languages";
   certifications?: string[];
   description?: string;
 }
@@ -18,19 +16,6 @@ export interface Experience {
   description: string;
   technologies: string[];
   achievements: string[];
-}
-
-export interface Project {
-  id: string;
-  title: string;
-  description: string;
-  longDescription: string;
-  imageUrl: string;
-  technologies: string[];
-  githubUrl?: string;
-  liveUrl?: string;
-  featured: boolean;
-  category: "ai-ml" | "backend" | "fullstack" | "cloud";
 }
 
 export interface Education {
@@ -64,6 +49,5 @@ export interface SiteConfig {
   contact: ContactInfo;
   skills: Skill[];
   experience: Experience[];
-  projects: Project[];
   education: Education[];
 }

@@ -97,13 +97,7 @@
     @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
   }
   
-  .skill-bar {
-    @apply h-2 bg-gray-200 rounded-full overflow-hidden dark:bg-gray-700;
-  }
-  
-  .skill-progress {
-    @apply h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-1000 ease-out;
-  }
+
   
   /* Mobile-specific utilities */
   .mobile-touch-target {
