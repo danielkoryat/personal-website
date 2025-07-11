@@ -60,6 +60,11 @@ export default function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="format-detection" content="telephone=no" />
+        {/* Google Search Console Verification - Replace with your actual verification code */}
+        <meta
+          name="google-site-verification"
+          content="google6dbd0d502889106e"
+        />
       </head>
       <body className={inter.className}>
         <ThemeProvider
