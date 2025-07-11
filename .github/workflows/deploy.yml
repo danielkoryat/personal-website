@@ -1,4 +1,4 @@
-name: 🚀 Deploy to Home Server
+name: 🔍 CI/CD Pipeline
 
 permissions:
   contents: read
@@ -37,7 +37,7 @@ jobs:
   ci:
     name: 🔍 Continuous Integration
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' || github.event_name == 'push'
     
     steps:
     - name: 📥 Checkout Code
@@ -53,7 +53,7 @@ jobs:
       run: npm ci
     
     - name: 🧪 Run Tests
-      run: npm test
+      run: npm run test
     
     - name: 🔍 Lint Code
       run: npm run lint

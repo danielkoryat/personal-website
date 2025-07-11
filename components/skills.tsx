@@ -77,37 +77,14 @@ export function Skills() {
                     }}
                     className="bg-white dark:bg-gray-700 rounded-lg p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow"
                   >
-                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-3 gap-2">
+                    <div className="mb-3">
                       <h4 className="font-medium text-gray-900 dark:text-white text-sm sm:text-base">
                         {skill.name}
                       </h4>
-                      <div className="flex items-center space-x-2">
-                        <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
-                          {skill.yearsOfExperience}{" "}
-                          {skill.yearsOfExperience === 1 ? "year" : "years"}
-                        </span>
-                        <span className="text-xs sm:text-sm font-medium text-blue-600 dark:text-blue-400">
-                          {skill.proficiency}%
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="skill-bar">
-                      <motion.div
-                        className="skill-progress"
-                        initial={{ width: 0 }}
-                        animate={
-                          inView ? { width: `${skill.proficiency}%` } : {}
-                        }
-                        transition={{
-                          duration: 1.5,
-                          delay: categoryIndex * 0.2 + skillIndex * 0.1 + 0.3,
-                        }}
-                      />
                     </div>
 
                     {skill.description && (
-                      <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-2">
+                      <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                         {skill.description}
                       </p>
                     )}
@@ -145,7 +122,7 @@ export function Skills() {
             <h3 className="text-lg sm:text-xl font-semibold mb-4 text-gray-900 dark:text-white">
               Core Competencies
             </h3>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4 text-sm">
               <div className="text-center">
                 <div className="text-xl sm:text-2xl font-bold text-blue-600 dark:text-blue-400">
                   {config.skills.filter((s) => s.category === "backend").length}
@@ -181,6 +158,25 @@ export function Skills() {
                   Frontend
                 </div>
               </div>
+              <div className="text-center">
+                <div className="text-xl sm:text-2xl font-bold text-gray-600 dark:text-gray-400">
+                  {config.skills.filter((s) => s.category === "tools").length}
+                </div>
+                <div className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">
+                  Tools
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-xl sm:text-2xl font-bold text-indigo-600 dark:text-indigo-400">
+                  {
+                    config.skills.filter((s) => s.category === "languages")
+                      .length
+                  }
+                </div>
+                <div className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">
+                  Languages
+                </div>
+              </div>
             </div>
           </div>
         </motion.div>
@@ -198,35 +194,35 @@ export function Skills() {
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-center">
               <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
-                <div className="text-2xl sm:text-3xl font-bold text-green-600 dark:text-green-400 mb-2">
-                  2+
+                <div className="text-2xl font-bold text-blue-600 dark:text-blue-400 mb-2">
+                  AI/ML
                 </div>
-                <div className="text-gray-600 dark:text-gray-400 text-sm">
-                  Years Experience
-                </div>
-              </div>
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
-                <div className="text-2xl sm:text-3xl font-bold text-blue-600 dark:text-blue-400 mb-2">
-                  20+
-                </div>
-                <div className="text-gray-600 dark:text-gray-400 text-sm">
-                  Technologies
+                <div className="text-sm text-gray-600 dark:text-gray-400">
+                  RAG Systems & LangChain
                 </div>
               </div>
               <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
-                <div className="text-2xl sm:text-3xl font-bold text-purple-600 dark:text-purple-400 mb-2">
-                  95%
+                <div className="text-2xl font-bold text-green-600 dark:text-green-400 mb-2">
+                  Cloud
                 </div>
-                <div className="text-gray-600 dark:text-gray-400 text-sm">
-                  Python Proficiency
+                <div className="text-sm text-gray-600 dark:text-gray-400">
+                  AWS Infrastructure
                 </div>
               </div>
               <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
-                <div className="text-2xl sm:text-3xl font-bold text-orange-600 dark:text-orange-400 mb-2">
-                  🏢
+                <div className="text-2xl font-bold text-purple-600 dark:text-purple-400 mb-2">
+                  Microservices
                 </div>
-                <div className="text-gray-600 dark:text-gray-400 text-sm">
-                  Enterprise Focus
+                <div className="text-sm text-gray-600 dark:text-gray-400">
+                  Scalable Architecture
+                </div>
+              </div>
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
+                <div className="text-2xl font-bold text-orange-600 dark:text-orange-400 mb-2">
+                  DevOps
+                </div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">
+                  CI/CD & Infrastructure
                 </div>
               </div>
             </div>

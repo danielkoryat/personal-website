@@ -28,6 +28,56 @@ This website is more than just a portfolio—it's a full-stack, production-grade
 
 ---
 
+## Admin Panel Access
+
+The website includes a built-in admin panel for content management:
+
+### How to Access:
+1. **Navigate to the website** in your browser
+2. **Look for the floating edit button** (pencil icon) in the bottom-right corner
+3. **Click the edit button** to open the admin panel
+4. **Edit content** directly in the interface (currently view-only in this version)
+
+### Admin Panel Features:
+- View and manage skills, experience, and other content
+- Real-time preview of changes
+- Clean, intuitive interface for content management
+
+*Note: The admin panel is currently in view-only mode. Future versions will include full editing capabilities.*
+
+---
+
+## CI/CD Pipeline
+
+The project uses a comprehensive CI/CD pipeline with separate workflows:
+
+### 🔍 CI/CD Pipeline (`.github/workflows/deploy.yml`)
+**Triggers:** Push to main, Pull requests, Manual dispatch
+
+**Jobs:**
+1. **Continuous Integration**
+   - Code checkout and Node.js setup
+   - Dependency installation
+   - Type checking and linting
+   - Application build
+   - Security scanning (on main branch)
+
+2. **Deployment** (main branch only)
+   - Blue/green deployment to home server
+   - Health checks and validation
+   - Email notifications on completion
+
+### 🔧 Scheduled Maintenance (`.github/workflows/scheduled-maintenance.yml`)
+**Triggers:** Weekly schedule (Sundays 2 AM UTC), Manual dispatch
+
+**Tasks:**
+- Docker system cleanup
+- Log rotation
+- System health monitoring
+- Resource usage reporting
+
+---
+
 ## Use This as Your Own Self-Hosted Template
 
 You can fork this repo and use it as a starting point for your own self-hosted portfolio or personal site. All configuration is handled via environment variables and simple JSON files.
@@ -40,7 +90,8 @@ You can fork this repo and use it as a starting point for your own self-hosted p
    cd personal-website
    ```
 2. **Edit your content**
-   - Update `data/site-config.json` with your info, experience, and projects.
+   - Update `data/site-config.json` with your info, experience, and skills.
+   - Use the admin panel (floating edit button) for easy content management.
 3. **Set up environment variables**
    - Create a `.env.local` for local dev, or use GitHub Secrets for production:
      - `EMAIL_USER` (Gmail address for contact form)
@@ -60,11 +111,13 @@ You can fork this repo and use it as a starting point for your own self-hosted p
 
 ### Deployment & Blue/Green Zero Downtime
 
-- The included GitHub Actions workflow (`.github/workflows/deploy.yml`) automates:
-  - Building the site
+- The CI/CD pipeline automates:
+  - Building and testing the site
+  - Security scanning with CodeQL
   - Deploying to a new Docker container (blue/green)
   - Switching Nginx upstreams with zero downtime
   - Stopping the old container
+  - Post-deployment health checks
 
 ### Why Self-Host?
 
