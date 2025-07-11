@@ -126,6 +126,51 @@ You can fork this repo and use it as a starting point for your own self-hosted p
 
 ---
 
+## Troubleshooting & Maintenance
+
+### Health Monitoring
+
+The project includes several monitoring and debugging tools:
+
+```bash
+# Check service health
+./scripts/health-monitor.sh
+
+# Detailed health check with logs
+./scripts/health-monitor.sh --verbose
+
+# Manual deployment/rollback
+./scripts/deploy.sh
+./scripts/deploy.sh --rollback
+```
+
+### Common Issues & Solutions
+
+**Nginx "host not found in upstream" Error:**
+- **Cause:** Nginx starts before the portfolio service is ready
+- **Solution:** Fixed in the updated deployment workflow - portfolio service now starts first
+- **Prevention:** Proper service dependencies and health checks in docker-compose.yml
+
+**Service Startup Order:**
+- Portfolio service → Nginx → Cloudflare Tunnel
+- Each service waits for the previous one to be healthy before starting
+
+**Health Check Endpoints:**
+- Application: `http://localhost:8080/health`
+- Nginx: `http://localhost:8080/nginx-health`
+- Use these endpoints to verify service status
+
+### Recent Fixes (Latest Update)
+
+1. **Fixed Deployment Order:** Portfolio service now starts before nginx to prevent upstream resolution errors
+2. **Enhanced Health Checks:** Improved health check configuration with proper timeouts and retries
+3. **Better Error Handling:** Added comprehensive error handling and logging in deployment scripts
+4. **Rate Limiting:** Added nginx rate limiting for API endpoints and general traffic
+5. **Gzip Compression:** Enabled compression for better performance
+6. **Monitoring Scripts:** Added health monitoring and deployment scripts for easier troubleshooting
+
+---
+
 ## Questions or Want to Connect?
 
 - [LinkedIn](https://www.linkedin.com/in/daniel-koryat)

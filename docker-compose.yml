@@ -36,8 +36,11 @@ services:
       # Mount the main config (read-only)
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
     restart: unless-stopped
+    depends_on:
+      portfolio:
+        condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "nginx -t && curl -f http://localhost/nginx-health || exit 1"]
+      test: ["CMD-SHELL", "nginx -t && curl -f http://localhost/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
