@@ -1,4 +1,4 @@
-name: 🚀 Deploy to Home Server
+name: 🔍 CI/CD Pipeline
 
 permissions:
   contents: read
