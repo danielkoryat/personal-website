@@ -53,7 +53,7 @@ jobs:
       run: npm ci
     
     - name: 🧪 Run Tests
-      run: npm test
+      run: npm run test
     
     - name: 🔍 Lint Code
       run: npm run lint
