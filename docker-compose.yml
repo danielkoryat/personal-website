@@ -10,12 +10,20 @@ services:
       - NEXT_TELEMETRY_DISABLED=1
       - EMAIL_USER=${EMAIL_USER}
       - EMAIL_PASS=${EMAIL_PASS}
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+        reservations:
+          memory: 512M
+          cpus: '0.25'
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:3000/api/health"]
-      interval: 15s
-      timeout: 10s
-      retries: 5
-      start_period: 60s
+      interval: 30s
+      timeout: 15s
+      retries: 8
+      start_period: 120s
     networks:
       - portfolio-network
 
@@ -30,12 +38,20 @@ services:
       - NEXT_TELEMETRY_DISABLED=1
       - EMAIL_USER=${EMAIL_USER}
       - EMAIL_PASS=${EMAIL_PASS}
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+        reservations:
+          memory: 512M
+          cpus: '0.25'
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:3000/api/health"]
-      interval: 15s
-      timeout: 10s
-      retries: 5
-      start_period: 60s
+      interval: 30s
+      timeout: 15s
+      retries: 8
+      start_period: 120s
     networks:
       - portfolio-network
 

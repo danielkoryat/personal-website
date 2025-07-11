@@ -6,7 +6,7 @@ set -e
 check_health() {
   local container_name=$1
   echo "🔍 Waiting for ${container_name} to become healthy..."
-  for i in {1..30}; do
+  for i in {1..60}; do
     HEALTH_STATUS=$(docker inspect --format '{{.State.Health.Status}}' ${container_name} 2>/dev/null || echo "starting")
     if [ "${HEALTH_STATUS}" == "healthy" ]; then
       echo "✅ ${container_name} is healthy!"
@@ -141,7 +141,16 @@ fi
 
 # 4. Build and deploy the new version to the standby slot
 echo "🔨 Building and deploying the ${DEPLOY_SLOT} container..."
-docker compose up --build -d --remove-orphans "daniel-koryat-portfolio-${DEPLOY_SLOT}"
+echo "📊 System resources before build:"
+echo "  • Memory: $(free -h | grep '^Mem:' | awk '{print $3"/"$2}')"
+echo "  • Disk: $(df -h / | tail -1 | awk '{print $5}')"
+
+# Build with progress output and error handling
+if ! docker compose up --build -d --remove-orphans "daniel-koryat-portfolio-${DEPLOY_SLOT}"; then
+    echo "❌ Build failed. Checking logs..."
+    docker compose logs "daniel-koryat-portfolio-${DEPLOY_SLOT}"
+    exit 1
+fi
 
 # 5. Wait for the new container to be healthy
 check_health "daniel-koryat-portfolio-${DEPLOY_SLOT}"
@@ -164,9 +173,9 @@ echo "🔄 Performing graceful nginx reload with connection draining..."
 # Send SIGUSR1 to nginx for graceful reload (drains existing connections)
 docker compose exec nginx nginx -s reload
 
-# Wait a moment for connections to drain
-echo "⏳ Waiting for connections to drain..."
-sleep 5
+# Wait longer for connections to drain and new container to stabilize
+echo "⏳ Waiting for connections to drain and container to stabilize..."
+sleep 15
 
 # Verify the new environment is still healthy after traffic switch
 NEW_CONTAINER="daniel-koryat-portfolio-${DEPLOY_SLOT}"
