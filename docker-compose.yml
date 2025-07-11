@@ -20,10 +20,10 @@ services:
           cpus: '0.25'
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:3000/api/health"]
-      interval: 30s
-      timeout: 15s
-      retries: 8
-      start_period: 120s
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 60s
     networks:
       - portfolio-network
 
@@ -48,10 +48,10 @@ services:
           cpus: '0.25'
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:3000/api/health"]
-      interval: 30s
-      timeout: 15s
-      retries: 8
-      start_period: 120s
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 60s
     networks:
       - portfolio-network
 

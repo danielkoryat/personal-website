@@ -63,9 +63,61 @@ else
   done
 fi
 
-# 2. Ensure Nginx and Cloudflared are running
-echo "🌐 Ensuring core services (nginx, cloudflared) are up..."
+# Force remove any existing containers to prevent name conflicts
+echo "🛑 Force removing any existing containers to prevent name conflicts..."
+docker rm -f daniel-koryat-portfolio-blue daniel-koryat-portfolio-green 2>/dev/null || true
+echo "Total reclaimed space: $(docker system prune -f --volumes 2>/dev/null | grep 'Total reclaimed space' | awk '{print $4}' || echo '0B')"
+echo "✅ Container cleanup completed"
+
+# 2. Pre-deployment validation
+echo "🔍 Validating deployment environment..."
+
+# Check if required files exist
+if [ ! -f "docker-compose.yml" ]; then
+    echo "❌ docker-compose.yml not found"
+    exit 1
+fi
+
+if [ ! -f "nginx.conf" ]; then
+    echo "❌ nginx.conf not found"
+    exit 1
+fi
+
+# Check Docker daemon
+if ! docker info >/dev/null 2>&1; then
+    echo "❌ Docker daemon is not running"
+    exit 1
+fi
+
+# Check available disk space (require at least 2GB free)
+FREE_SPACE=$(df -BG . | awk 'NR==2 {print $4}' | sed 's/G//')
+if [ "$FREE_SPACE" -lt 2 ]; then
+    echo "❌ Insufficient disk space. Available: ${FREE_SPACE}G, Required: 2G"
+    exit 1
+fi
+
+echo "✅ Pre-deployment validation passed"
+
+# 3. Ensure Nginx and Cloudflared are running
+echo "🚀 Ensuring nginx and cloudflared are running..."
 docker compose up -d --remove-orphans nginx cloudflared
+
+# Wait for nginx to be healthy
+echo "🔍 Waiting for nginx to be healthy..."
+for i in {1..30}; do
+    NGINX_STATUS=$(docker inspect --format '{{.State.Health.Status}}' portfolio-nginx 2>/dev/null || echo "starting")
+    if [ "${NGINX_STATUS}" == "healthy" ]; then
+        echo "✅ Nginx is healthy!"
+        break
+    fi
+    echo "⏳ Waiting for nginx... (Status: ${NGINX_STATUS})"
+    sleep 5
+done
+
+if [ "${NGINX_STATUS}" != "healthy" ]; then
+    echo "❌ Nginx failed to become healthy"
+    exit 1
+fi
 
 # 2. Determine which environment is live and which is the target for deployment
 # We check which server is active in active_upstream.conf
@@ -140,17 +192,23 @@ else
 fi
 
 # 4. Build and deploy the new version to the standby slot
-echo "🔨 Building and deploying the ${DEPLOY_SLOT} container..."
+echo "🚀 Building and deploying daniel-koryat-portfolio-${DEPLOY_SLOT}..."
+
+# Check system resources before build
 echo "📊 System resources before build:"
 echo "  • Memory: $(free -h | grep '^Mem:' | awk '{print $3"/"$2}')"
 echo "  • Disk: $(df -h / | tail -1 | awk '{print $5}')"
 
 # Build with progress output and error handling
+echo "🔨 Starting Docker build..."
 if ! docker compose up --build -d --remove-orphans "daniel-koryat-portfolio-${DEPLOY_SLOT}"; then
     echo "❌ Build failed. Checking logs..."
     docker compose logs "daniel-koryat-portfolio-${DEPLOY_SLOT}"
+    echo "❌ Deployment failed - build error"
     exit 1
 fi
+
+echo "✅ Build completed successfully"
 
 # 5. Wait for the new container to be healthy
 check_health "daniel-koryat-portfolio-${DEPLOY_SLOT}"
@@ -228,4 +286,21 @@ echo "✅ Final validation passed - deployment successful!"
 echo "🛑 Stopping the old ${LIVE_SLOT} container..."
 docker compose stop "daniel-koryat-portfolio-${LIVE_SLOT}"
 
-echo "🎉 Zero-downtime deployment complete. ${DEPLOY_SLOT} is now the live environment."
+echo "🎉 Zero-downtime deployment complete!"
+
+# Display deployment summary
+echo "📈 Deployment Summary:"
+echo "  • Environment: production"
+echo "  • Deployed Slot: ${DEPLOY_SLOT}"
+echo "  • Previous Slot: ${LIVE_SLOT}"
+echo "  • Container: daniel-koryat-portfolio-${DEPLOY_SLOT}"
+echo "  • Time: $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+
+# Show running containers
+echo "📋 Current container status:"
+docker ps --format "table {{.Names}}\t{{.Image}}\t{{.Command}}\t{{.Service}}\t{{.CreatedAt}}\t{{.Status}}\t{{.Ports}}"
+
+# Final success message
+echo "✅ Deployment SUCCESS for production"
+echo "Slot: ${DEPLOY_SLOT}"
+echo "Time: $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
