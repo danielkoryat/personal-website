@@ -28,7 +28,10 @@ services:
       - portfolio-network
 
   nginx:
-    image: nginx:alpine
+    build:
+      context: .
+      dockerfile: nginx.Dockerfile
+    image: portfolio-nginx:custom
     container_name: portfolio-nginx
     ports:
       - "8080:80" 
@@ -40,7 +43,7 @@ services:
       portfolio:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "nginx -t && curl -f http://localhost/health || exit 1"]
+      test: ["CMD-SHELL", "nginx -t && curl -f http://localhost/nginx-health"]
       interval: 30s
       timeout: 10s
       retries: 3
