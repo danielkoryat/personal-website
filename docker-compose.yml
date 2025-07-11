@@ -1,37 +1,9 @@
 services:
-  daniel-koryat-portfolio-blue:
+  portfolio:
     build: 
       context: .
       dockerfile: Dockerfile
-    container_name: daniel-koryat-portfolio-blue
-    restart: unless-stopped
-    environment:
-      - NODE_ENV=production
-      - NEXT_TELEMETRY_DISABLED=1
-      - EMAIL_USER=${EMAIL_USER}
-      - EMAIL_PASS=${EMAIL_PASS}
-    deploy:
-      resources:
-        limits:
-          memory: 1G
-          cpus: '0.5'
-        reservations:
-          memory: 512M
-          cpus: '0.25'
-    healthcheck:
-      test: ["CMD", "curl", "--fail", "http://localhost:3000/api/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 6
-      start_period: 60s
-    networks:
-      - portfolio-network
-
-  daniel-koryat-portfolio-green:
-    build: 
-      context: .
-      dockerfile: Dockerfile
-    container_name: daniel-koryat-portfolio-green
+    container_name: daniel-koryat-portfolio
     restart: unless-stopped
     environment:
       - NODE_ENV=production
@@ -63,8 +35,6 @@ services:
     volumes:
       # Mount the main config (read-only)
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      # Mount the file that controls the active upstream (read-only)
-      - ./active_upstream.conf:/etc/nginx/conf.d/active_upstream.conf:ro
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "nginx -t && curl -f http://localhost/nginx-health || exit 1"]
