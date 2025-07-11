@@ -165,9 +165,13 @@ export function Hero() {
             className="relative order-1 lg:order-2 mb-8 lg:mb-0"
           >
             <div className="relative w-64 h-64 sm:w-80 sm:h-80 mx-auto">
-              {/* Placeholder for professional photo */}
-              <div className="w-full h-full bg-gradient-to-br from-blue-400 to-purple-600 rounded-full flex items-center justify-center text-white text-4xl sm:text-6xl font-bold shadow-2xl">
-                DK
+              {/* Professional photo */}
+              <div className="w-full h-full rounded-full overflow-hidden shadow-2xl">
+                <img
+                  src="/picture.png"
+                  alt="Daniel Koryat - Backend Web Developer"
+                  className="w-full h-full object-cover"
+                />
               </div>
 
               {/* Floating tech badges */}

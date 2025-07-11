@@ -28,6 +28,11 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "Daniel Koryat" }],
   creator: "Daniel Koryat",
+  icons: {
+    icon: "/picture.png",
+    shortcut: "/picture.png",
+    apple: "/picture.png",
+  },
   openGraph: {
     type: "website",
     locale: "en_US",
@@ -36,12 +41,21 @@ export const metadata: Metadata = {
     description:
       "Backend Web Developer specializing in Python/FastAPI, AWS cloud services, and AI/ML systems.",
     siteName: "Daniel Koryat Portfolio",
+    images: [
+      {
+        url: "/picture.png",
+        width: 1200,
+        height: 630,
+        alt: "Daniel Koryat - Backend Web Developer & AWS Cloud Specialist",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Daniel Koryat - Backend Web Developer & AWS Cloud Specialist",
     description:
       "Backend Web Developer specializing in Python/FastAPI, AWS cloud services, and AI/ML systems.",
+    images: ["/picture.png"],
   },
   robots: {
     index: true,
