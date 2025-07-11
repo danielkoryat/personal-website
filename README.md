@@ -28,22 +28,20 @@ This website is more than just a portfolio—it's a full-stack, production-grade
 
 ---
 
-## Admin Panel Access
+## Content Management
 
-The website includes a built-in admin panel for content management:
+The website uses a simple JSON-based content management system for easy updates:
 
-### How to Access:
-1. **Navigate to the website** in your browser
-2. **Look for the floating edit button** (pencil icon) in the bottom-right corner
-3. **Click the edit button** to open the admin panel
-4. **Edit content** directly in the interface (currently view-only in this version)
+### How to Update Content:
+1. **Edit the configuration file** at `data/site-config.json`
+2. **Update your skills, experience, and other content** directly in the JSON file
+3. **Push changes to trigger automatic deployment** via the CI/CD pipeline
 
-### Admin Panel Features:
-- View and manage skills, experience, and other content
-- Real-time preview of changes
-- Clean, intuitive interface for content management
-
-*Note: The admin panel is currently in view-only mode. Future versions will include full editing capabilities.*
+### Content Structure:
+- Skills and expertise with categories and certifications
+- Professional experience with detailed descriptions
+- Contact information and personal details
+- All content is version-controlled and easily maintainable
 
 ---
 
@@ -91,7 +89,7 @@ You can fork this repo and use it as a starting point for your own self-hosted p
    ```
 2. **Edit your content**
    - Update `data/site-config.json` with your info, experience, and skills.
-   - Use the admin panel (floating edit button) for easy content management.
+   - All content is managed through simple JSON configuration files.
 3. **Set up environment variables**
    - Create a `.env.local` for local dev, or use GitHub Secrets for production:
      - `EMAIL_USER` (Gmail address for contact form)

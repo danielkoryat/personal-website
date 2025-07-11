@@ -17,137 +17,138 @@
     {
       "name": "Python",
       "category": "backend",
-      "description": "Core backend development language"
+      "description": "Core backend development language with expertise in async programming, data processing, and API development",
+      "certifications": ["Python Developer Certificate"]
     },
     {
       "name": "FastAPI",
       "category": "backend",
-      "description": "Modern async web framework"
+      "description": "Modern async web framework for building high-performance APIs with automatic documentation and validation"
     },
     {
       "name": "Pydantic",
       "category": "backend",
-      "description": "Data validation and settings management"
+      "description": "Data validation and settings management with type safety and automatic serialization"
     },
     {
       "name": "LangChain",
       "category": "ai-ml",
-      "description": "AI/ML framework for RAG systems"
+      "description": "AI/ML framework for building RAG systems, LLM applications, and intelligent chatbots"
     },
     {
       "name": "Redis",
       "category": "backend",
-      "description": "Caching and session management"
+      "description": "In-memory data structure store for caching, session management, and real-time applications"
     },
     {
       "name": "MongoDB",
       "category": "backend",
-      "description": "NoSQL database management"
+      "description": "NoSQL database management with aggregation pipelines and document-based data modeling"
     },
     {
       "name": "PostgreSQL",
       "category": "backend",
-      "description": "Relational database management"
+      "description": "Relational database management with complex queries, indexing, and data integrity"
     },
     {
       "name": "Pinecone",
       "category": "ai-ml",
-      "description": "Vector database for embeddings"
+      "description": "Vector database for semantic search, embeddings storage, and AI-powered applications"
     },
     {
       "name": "AWS Lambda",
       "category": "cloud",
-      "description": "Serverless computing"
+      "description": "Serverless computing platform for event-driven applications and microservices"
     },
     {
       "name": "AWS S3",
       "category": "cloud",
-      "description": "Object storage service"
+      "description": "Object storage service for scalable data storage, backup, and content delivery"
     },
     {
       "name": "AWS MSK",
       "category": "cloud",
-      "description": "Managed streaming for Apache Kafka"
+      "description": "Managed streaming for Apache Kafka with real-time data processing capabilities"
     },
     {
       "name": "AWS CloudFront",
       "category": "cloud",
-      "description": "Content delivery network"
+      "description": "Content delivery network for global content distribution and performance optimization"
     },
     {
       "name": "AWS Cognito",
       "category": "cloud",
-      "description": "User authentication and authorization"
+      "description": "User authentication and authorization with social login integration and security features"
     },
     {
       "name": "AWS DynamoDB",
       "category": "cloud",
-      "description": "NoSQL database service"
+      "description": "NoSQL database service with automatic scaling and high availability"
     },
     {
       "name": "AWS API Gateway",
       "category": "cloud",
-      "description": "API management and routing"
+      "description": "API management and routing with request/response transformation and security"
     },
     {
       "name": "AWS CloudWatch",
       "category": "cloud",
-      "description": "Monitoring and logging"
+      "description": "Monitoring and logging with custom metrics, alarms, and observability dashboards"
     },
     {
       "name": "Terraform",
       "category": "cloud",
-      "description": "Infrastructure as Code"
+      "description": "Infrastructure as Code for provisioning and managing cloud resources with version control"
     },
     {
       "name": "React",
       "category": "frontend",
-      "description": "Frontend development"
+      "description": "Frontend development with component-based architecture and modern React patterns"
     },
     {
       "name": "TypeScript",
       "category": "frontend",
-      "description": "Type-safe JavaScript"
+      "description": "Type-safe JavaScript with advanced type system and developer tooling"
     },
     {
       "name": "Next.js",
       "category": "frontend",
-      "description": "React framework"
+      "description": "React framework with server-side rendering, static generation, and API routes"
     },
     {
       "name": "TailwindCSS",
       "category": "frontend",
-      "description": "Utility-first CSS framework"
+      "description": "Utility-first CSS framework for rapid UI development and responsive design"
     },
     {
       "name": "Git",
       "category": "tools",
-      "description": "Version control"
+      "description": "Version control with branching strategies, code review workflows, and CI/CD integration"
     },
     {
       "name": "Docker",
       "category": "tools",
-      "description": "Containerization"
+      "description": "Containerization for consistent development environments and deployment"
     },
     {
       "name": "Kafka",
       "category": "backend",
-      "description": "Distributed streaming platform"
+      "description": "Distributed streaming platform for real-time data processing and event-driven architecture"
     },
     {
       "name": "OpenTelemetry",
       "category": "backend",
-      "description": "Observability framework"
+      "description": "Observability framework for distributed tracing, metrics, and logging"
     },
     {
       "name": "Hebrew",
       "category": "languages",
-      "description": "Native language"
+      "description": "Native language with full professional proficiency"
     },
     {
       "name": "English",
       "category": "languages",
-      "description": "Fluent"
+      "description": "Fluent professional communication and technical documentation"
     }
   ],
   "experience": [
