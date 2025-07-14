@@ -63,12 +63,12 @@ else
     echo "❌ Not running"
 fi
 
-# Check cloudflared service
+# Check cloudflared service (system service)
 echo -n "Cloudflare Tunnel: "
-if docker ps -q -f name=cloudflare-tunnel | grep -q .; then
-    echo "✅ Running"
+if systemctl is-active --quiet cloudflared; then
+    echo "✅ Running (system service)"
 else
-    echo "❌ Not running"
+    echo "❌ Not running (system service)"
 fi
 
 echo ""

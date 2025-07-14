@@ -76,8 +76,6 @@ if [ "$ROLLBACK" = true ]; then
         exit 1
     fi
     
-    docker compose up -d cloudflared
-    
     echo "✅ Rollback completed successfully!"
 else
     echo "🚀 Performing deployment..."
@@ -115,9 +113,6 @@ else
         docker compose logs nginx
         exit 1
     fi
-    
-    # Start cloudflared
-    docker compose up -d cloudflared
     
     # Final validation
     echo "🔍 Performing final validation..."

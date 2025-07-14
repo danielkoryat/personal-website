@@ -94,7 +94,7 @@ You can fork this repo and use it as a starting point for your own self-hosted p
    - Create a `.env.local` for local dev, or use GitHub Secrets for production:
      - `EMAIL_USER` (Gmail address for contact form)
      - `EMAIL_PASS` (Gmail app password)
-     - `CLOUDFLARED_TOKEN` (Cloudflare Tunnel token)
+     
 4. **Build and run locally**
    ```bash
    npm install

@@ -86,7 +86,6 @@ jobs:
       health_check_timeout: '300'
       notification_enabled: true
     secrets:
-      CLOUDFLARE_TUNNEL_TOKEN: ${{ secrets.CLOUDFLARE_TUNNEL_TOKEN }}
       EMAIL_USER: ${{ secrets.EMAIL_USER }}
       EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
 

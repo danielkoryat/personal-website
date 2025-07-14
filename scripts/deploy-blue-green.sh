@@ -116,9 +116,9 @@ fi
 
 echo "✅ Pre-deployment validation passed"
 
-# 3. Ensure Nginx and Cloudflared are running
-echo "🚀 Ensuring nginx and cloudflared are running..."
-docker compose up -d --remove-orphans nginx cloudflared
+# 3. Ensure Nginx is running
+echo "🚀 Ensuring nginx is running..."
+docker compose up -d --remove-orphans nginx
 
 # Wait for nginx to be healthy
 echo "🔍 Waiting for nginx to be healthy..."

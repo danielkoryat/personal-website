@@ -50,17 +50,6 @@ services:
       start_period: 30s
     networks:
       - portfolio-network
-      
-  cloudflared:
-    image: cloudflare/cloudflared:latest
-    container_name: cloudflare-tunnel
-    restart: unless-stopped
-    command: tunnel --no-autoupdate run --token ${CLOUDFLARED_TOKEN}
-    depends_on:
-      nginx:
-        condition: service_healthy
-    networks:
-      - portfolio-network
 
 networks:
   portfolio-network:
