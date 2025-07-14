@@ -61,7 +61,7 @@ tunnel: YOUR_TUNNEL_ID
 credentials-file: /etc/cloudflared/YOUR_TUNNEL_ID.json
 ingress:
   - hostname: your-portfolio-domain.com
-    service: http://localhost:8080
+    service: http://localhost:3000
   - service: http_status:404
 ```
 

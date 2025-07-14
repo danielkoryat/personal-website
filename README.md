@@ -156,8 +156,7 @@ The project includes several monitoring and debugging tools:
 - Each service waits for the previous one to be healthy before starting
 
 **Health Check Endpoints:**
-- Application: `http://localhost:8080/health`
-- Nginx: `http://localhost:8080/nginx-health`
+- Application: `http://localhost:3000/api/health`
 - Use these endpoints to verify service status
 
 ### Recent Fixes (Latest Update)

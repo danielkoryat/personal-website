@@ -14,7 +14,7 @@ check_health() {
       # Additional HTTP health check to ensure the application is responding
       echo "🔍 Performing HTTP health check..."
       for j in {1..10}; do
-        HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:8080/api/health" 2>/dev/null || echo "000")
+        HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:3000/api/health" 2>/dev/null || echo "000")
         if [ "${HTTP_STATUS}" == "200" ]; then
           echo "✅ HTTP health check passed (Status: ${HTTP_STATUS})"
           return 0
@@ -96,10 +96,7 @@ if [ ! -f "docker-compose.yml" ]; then
     exit 1
 fi
 
-if [ ! -f "nginx.conf" ]; then
-    echo "❌ nginx.conf not found"
-    exit 1
-fi
+# Note: nginx.conf is no longer needed as nginx is a separate service
 
 # Check Docker daemon
 if ! docker info >/dev/null 2>&1; then
@@ -116,26 +113,7 @@ fi
 
 echo "✅ Pre-deployment validation passed"
 
-# 3. Ensure Nginx is running
-echo "🚀 Ensuring nginx is running..."
-docker compose up -d --remove-orphans nginx
-
-# Wait for nginx to be healthy
-echo "🔍 Waiting for nginx to be healthy..."
-for i in {1..30}; do
-    NGINX_STATUS=$(docker inspect --format '{{.State.Health.Status}}' portfolio-nginx 2>/dev/null || echo "starting")
-    if [ "${NGINX_STATUS}" == "healthy" ]; then
-        echo "✅ Nginx is healthy!"
-        break
-    fi
-    echo "⏳ Waiting for nginx... (Status: ${NGINX_STATUS})"
-    sleep 5
-done
-
-if [ "${NGINX_STATUS}" != "healthy" ]; then
-    echo "❌ Nginx failed to become healthy"
-    exit 1
-fi
+# Note: Nginx is now a separate service on the server
 
 # 2. Determine which environment is live and which is the target for deployment
 # We check which server is active in active_upstream.conf
@@ -231,65 +209,18 @@ echo "✅ Build completed successfully"
 # 5. Wait for the new container to be healthy
 check_health "daniel-koryat-portfolio-${DEPLOY_SLOT}"
 
-# 6. Switch Nginx traffic to the newly deployed container
-echo "🔄 Switching traffic from ${LIVE_SLOT} to ${DEPLOY_SLOT}..."
+# 6. Switch traffic to the newly deployed container
+echo "🔄 Switching to new deployment..."
 
-# Backup current config
-cp active_upstream.conf active_upstream.conf.backup
-
-# Create new config with the new active upstream
-echo "set \$active_upstream daniel-koryat-portfolio-${DEPLOY_SLOT}:3000;" > active_upstream.conf.tmp
-echo "set \$backup_upstream daniel-koryat-portfolio-${LIVE_SLOT}:3000;" >> active_upstream.conf.tmp
-
-# Atomically switch the upstream configuration
-mv active_upstream.conf.tmp active_upstream.conf
-
-# Perform graceful nginx reload with connection draining
-echo "🔄 Performing graceful nginx reload with connection draining..."
-
-# Send SIGUSR1 to nginx for graceful reload (drains existing connections)
-docker compose exec nginx nginx -s reload
-
-# Wait for connections to drain and new container to stabilize
-echo "⏳ Waiting for connections to drain..."
-sleep 10
-
-# Verify nginx configuration is working
-echo "🔍 Verifying nginx configuration..."
-for i in {1..5}; do
-    NGINX_STATUS=$(docker inspect --format '{{.State.Health.Status}}' portfolio-nginx 2>/dev/null || echo "none")
-    if [ "${NGINX_STATUS}" == "healthy" ]; then
-        echo "✅ Nginx is healthy after reload"
-        break
-    fi
-    echo "⏳ Waiting for nginx to be healthy... (Status: ${NGINX_STATUS})"
-    sleep 2
-done
-
-if [ "${NGINX_STATUS}" != "healthy" ]; then
-    echo "❌ Nginx is not healthy after reload. Rolling back..."
-    mv active_upstream.conf.backup active_upstream.conf
-    docker compose exec nginx nginx -s reload
-    echo "❌ Deployment failed - nginx health check failed"
-    exit 1
+# Since nginx is external, we just need to stop the old container
+# The external nginx should be configured to point to localhost:3000
+if [ -n "${LIVE_SLOT}" ] && [ "${LIVE_SLOT}" != "${DEPLOY_SLOT}" ]; then
+    echo "🛑 Stopping old container: daniel-koryat-portfolio-${LIVE_SLOT}"
+    docker stop "daniel-koryat-portfolio-${LIVE_SLOT}" 2>/dev/null || true
+    docker rm "daniel-koryat-portfolio-${LIVE_SLOT}" 2>/dev/null || true
 fi
 
-# Verify the new environment is still healthy after traffic switch
-NEW_CONTAINER="daniel-koryat-portfolio-${DEPLOY_SLOT}"
-HEALTH_STATUS=$(docker inspect --format '{{.State.Health.Status}}' ${NEW_CONTAINER} 2>/dev/null || echo "none")
-
-if [ "${HEALTH_STATUS}" == "healthy" ]; then
-    echo "✅ Traffic switched successfully! New environment is healthy."
-else
-    echo "❌ New environment is not healthy after traffic switch. Rolling back..."
-    
-    # Rollback to previous configuration
-    mv active_upstream.conf.backup active_upstream.conf
-    docker compose exec nginx nginx -s reload
-    
-    echo "❌ Deployment failed - rolled back to previous environment"
-    exit 1
-fi
+echo "✅ Traffic switched to new deployment!"
 
 # 7. Final validation
 echo "🔍 Performing final deployment validation..."
@@ -300,22 +231,15 @@ HEALTH_STATUS=$(docker inspect --format '{{.State.Health.Status}}' ${NEW_CONTAIN
 
 if [ "${HEALTH_STATUS}" != "healthy" ]; then
     echo "❌ Final validation failed - new environment is not healthy"
-    echo "🔄 Rolling back to previous environment..."
-    
-    # Rollback to previous configuration
-    if [ -f active_upstream.conf.backup ]; then
-        mv active_upstream.conf.backup active_upstream.conf
-        docker compose exec nginx nginx -s reload
-        echo "✅ Rollback completed"
-    fi
-    
     exit 1
 fi
 
-# Verify nginx is serving traffic correctly
-NGINX_STATUS=$(docker inspect --format '{{.State.Health.Status}}' portfolio-nginx 2>/dev/null || echo "none")
-if [ "${NGINX_STATUS}" != "healthy" ]; then
-    echo "❌ Final validation failed - nginx is not healthy"
+# Test the application endpoint directly
+echo "🔍 Testing application endpoint..."
+if curl -f http://localhost:3000/api/health >/dev/null 2>&1; then
+    echo "✅ Application endpoint is responding"
+else
+    echo "❌ Application endpoint is not responding"
     exit 1
 fi
 

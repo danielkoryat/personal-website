@@ -68,14 +68,6 @@ if [ "$ROLLBACK" = true ]; then
         exit 1
     fi
     
-    docker compose up -d nginx
-    
-    if ! wait_for_health "portfolio-nginx" 60; then
-        echo "❌ Rollback failed - nginx service is not healthy"
-        docker compose logs nginx
-        exit 1
-    fi
-    
     echo "✅ Rollback completed successfully!"
 else
     echo "🚀 Performing deployment..."
@@ -95,7 +87,7 @@ else
     # Deploy with zero downtime
     echo "🚀 Deploying new version..."
     
-    # Start portfolio service first
+    # Start portfolio service
     docker compose up -d --force-recreate portfolio
     
     # Wait for portfolio to be healthy
@@ -105,26 +97,12 @@ else
         exit 1
     fi
     
-    # Start nginx after portfolio is healthy
-    docker compose up -d --force-recreate nginx
-    
-    if ! wait_for_health "portfolio-nginx" 60; then
-        echo "❌ Deployment failed - nginx service is not healthy"
-        docker compose logs nginx
-        exit 1
-    fi
-    
     # Final validation
     echo "🔍 Performing final validation..."
     
     # Test health endpoints
-    if ! curl -f http://localhost:8080/health >/dev/null 2>&1; then
+    if ! curl -f http://localhost:3000/api/health >/dev/null 2>&1; then
         echo "❌ Final validation failed - health endpoint not responding"
-        exit 1
-    fi
-    
-    if ! curl -f http://localhost:8080/nginx-health >/dev/null 2>&1; then
-        echo "❌ Final validation failed - nginx health endpoint not responding"
         exit 1
     fi
     
@@ -138,5 +116,4 @@ docker compose ps
 
 echo ""
 echo "🌐 Health Endpoints:"
-echo "• Application: http://localhost:8080/health"
-echo "• Nginx: http://localhost:8080/nginx-health" 
+echo "• Application: http://localhost:3000/api/health" 

@@ -169,9 +169,9 @@ RemainAfterExit=yes
 User=$SERVICE_USER
 Group=$SERVICE_USER
 WorkingDirectory=$APP_DIR
-ExecStart=/usr/local/bin/docker-compose up -d --remove-orphans daniel-koryat-portfolio-blue nginx certbot
+ExecStart=/usr/local/bin/docker-compose up -d --remove-orphans daniel-koryat-portfolio-blue
 ExecStop=/usr/local/bin/docker-compose down
-ExecReload=/bin/bash -c '/usr/local/bin/docker-compose up -d --remove-orphans daniel-koryat-portfolio-blue nginx certbot'
+ExecReload=/bin/bash -c '/usr/local/bin/docker-compose up -d --remove-orphans daniel-koryat-portfolio-blue'
 TimeoutStartSec=0
 Restart=on-failure
 RestartSec=30
@@ -235,148 +235,7 @@ EOF
     success "Health monitoring setup complete"
 }
 
-# Function to setup nginx configuration
-setup_nginx_config() {
-    log "Setting up nginx configuration..."
-    
-    # Ensure nginx.conf exists with proper upstream configuration
-    if [ ! -f "$APP_DIR/nginx.conf" ]; then
-        warning "nginx.conf not found. Creating a basic configuration..."
-        cat > "$APP_DIR/nginx.conf" << 'EOF'
-events {
-    worker_connections 1024;
-}
-
-http {
-    include       /etc/nginx/mime.types;
-    default_type  application/octet-stream;
-
-    # Logging
-    log_format main '$remote_addr - $remote_user [$time_local] "$request" '
-                    '$status $body_bytes_sent "$http_referer" '
-                    '"$http_user_agent" "$http_x_forwarded_for"';
-
-    access_log /var/log/nginx/access.log main;
-    error_log /var/log/nginx/error.log warn;
-
-    # Basic settings
-    sendfile on;
-    tcp_nopush on;
-    tcp_nodelay on;
-    keepalive_timeout 65;
-    types_hash_max_size 2048;
-    client_max_body_size 16M;
-
-    # Gzip compression
-    gzip on;
-    gzip_vary on;
-    gzip_min_length 1024;
-    gzip_proxied any;
-    gzip_comp_level 6;
-    gzip_types
-        text/plain
-        text/css
-        text/xml
-        text/javascript
-        application/json
-        application/javascript
-        application/xml+rss
-        application/atom+xml
-        image/svg+xml;
-
-    # Rate limiting
-    limit_req_zone $binary_remote_addr zone=api:10m rate=10r/s;
-    limit_req_zone $binary_remote_addr zone=general:10m rate=30r/s;
-
-    # Upstream for the Next.js application - Blue/Green deployment
-    upstream portfolio {
-        server daniel-koryat-portfolio-blue:3000 max_fails=3 fail_timeout=30s;
-        server daniel-koryat-portfolio-green:3000 max_fails=3 fail_timeout=30s backup;
-    }
-
-    # HTTP server (for Let's Encrypt challenge and redirect)
-    server {
-        listen 80;
-        server_name your-domain.com www.your-domain.com;
-        
-        # Let's Encrypt challenge location
-        location /.well-known/acme-challenge/ {
-            root /var/www/certbot;
-        }
-        
-        # Redirect all other HTTP traffic to HTTPS
-        location / {
-            return 301 https://$server_name$request_uri;
-        }
-    }
-
-    # HTTPS server
-    server {
-        listen 443 ssl http2;
-        server_name your-domain.com www.your-domain.com;
-
-        # SSL configuration (Let's Encrypt)
-        ssl_certificate /etc/letsencrypt/live/your-domain.com/fullchain.pem;
-        ssl_certificate_key /etc/letsencrypt/live/your-domain.com/privkey.pem;
-        ssl_protocols TLSv1.2 TLSv1.3;
-        ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384;
-        ssl_prefer_server_ciphers off;
-        ssl_session_cache shared:SSL:10m;
-        ssl_session_timeout 10m;
-
-        # Security headers
-        add_header X-Frame-Options "SAMEORIGIN" always;
-        add_header X-XSS-Protection "1; mode=block" always;
-        add_header X-Content-Type-Options "nosniff" always;
-        add_header Referrer-Policy "no-referrer-when-downgrade" always;
-        add_header Content-Security-Policy "default-src 'self' http: https: data: blob: 'unsafe-inline'" always;
-        add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
-
-        # Rate limiting
-        limit_req zone=general burst=20 nodelay;
-
-        # Proxy settings
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_cache_bypass $http_upgrade;
-        proxy_read_timeout 86400;
-
-        # Health check endpoint
-        location /health {
-            access_log off;
-            return 200 "healthy\n";
-            add_header Content-Type text/plain;
-        }
-
-        # API routes with rate limiting
-        location /api/ {
-            limit_req zone=api burst=5 nodelay;
-            proxy_pass http://portfolio;
-        }
-
-        # Static files
-        location /_next/static/ {
-            proxy_pass http://portfolio;
-            expires 1y;
-            add_header Cache-Control "public, immutable";
-        }
-
-        # All other requests
-        location / {
-            proxy_pass http://portfolio;
-        }
-    }
-}
-EOF
-    fi
-    
-    success "Nginx configuration setup complete"
-}
+# Note: Nginx configuration has been moved to a separate service on the server
 
 # Function to setup firewall
 setup_firewall() {
@@ -388,8 +247,7 @@ setup_firewall() {
         ufw allow ssh
         ufw allow 80/tcp
         ufw allow 443/tcp
-        ufw allow 8080/tcp  # For direct access if needed
-        ufw allow 8081/tcp  # For direct access if needed
+        ufw allow 3000/tcp  # For direct application access
         ufw reload
     elif command -v firewall-cmd &> /dev/null; then
         # CentOS/RHEL firewalld
@@ -398,8 +256,7 @@ setup_firewall() {
         firewall-cmd --permanent --add-service=ssh
         firewall-cmd --permanent --add-service=http
         firewall-cmd --permanent --add-service=https
-        firewall-cmd --permanent --add-port=8080/tcp
-        firewall-cmd --permanent --add-port=8081/tcp
+        firewall-cmd --permanent --add-port=3000/tcp
         firewall-cmd --reload
     else
         warning "No supported firewall found. Please configure firewall manually."
@@ -493,7 +350,7 @@ display_final_info() {
     echo "Your zero-downtime portfolio application is now set up!"
     echo
     echo "Next steps:"
-    echo "1. Update your domain in nginx.conf and docker-compose.yml"
+    echo "1. Configure your external nginx service to point to localhost:3000"
     echo "2. Configure SSL certificates using: $APP_DIR/scripts/setup-ssl.sh"
     echo "3. Deploy your application: $APP_DIR/scripts/deploy-blue-green.sh deploy"
     echo "4. Check status: $APP_DIR/scripts/deploy-blue-green.sh status"
@@ -510,7 +367,7 @@ display_final_info() {
     echo "- Monitor: systemctl status portfolio-monitor.service"
     echo
     echo "To connect with Cloudflare tunnel:"
-    echo "- Point your tunnel to: localhost:80"
+    echo "- Point your tunnel to: localhost:3000"
     echo "- The application will be available through the tunnel"
     echo
 }
@@ -526,7 +383,6 @@ main() {
     create_service_user
     setup_application
     install_application
-    setup_nginx_config
     setup_systemd_service
     setup_monitoring
     setup_firewall

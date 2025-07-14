@@ -46,22 +46,7 @@ else
     echo "❌ Not running"
 fi
 
-# Check nginx service
-echo -n "Nginx Service: "
-if docker ps -q -f name=portfolio-nginx | grep -q .; then
-    HEALTH_STATUS=$(docker inspect --format '{{.State.Health.Status}}' portfolio-nginx 2>/dev/null || echo "no-health-check")
-    if [ "$HEALTH_STATUS" == "healthy" ]; then
-        echo "✅ Healthy"
-    elif [ "$HEALTH_STATUS" == "starting" ]; then
-        echo "🔄 Starting"
-    elif [ "$HEALTH_STATUS" == "unhealthy" ]; then
-        echo "❌ Unhealthy"
-    else
-        echo "⚠️ Running (no health check)"
-    fi
-else
-    echo "❌ Not running"
-fi
+# Note: Nginx service has been moved to a separate service on the server
 
 # Check cloudflared service (system service)
 echo -n "Cloudflare Tunnel: "
@@ -75,28 +60,17 @@ echo ""
 echo "🌐 Network Connectivity:"
 echo "----------------------"
 
-# Test internal connectivity
-echo -n "Portfolio -> Nginx: "
-if docker exec daniel-koryat-portfolio curl -f http://portfolio-nginx/nginx-health >/dev/null 2>&1; then
-    echo "✅ Connected"
-else
-    echo "❌ Failed"
-fi
+# Note: Portfolio now exposes port 3000 directly, no internal nginx connection needed
 
 # Test external health endpoints
 echo -n "External Health Check: "
-if curl -f http://localhost:8080/health >/dev/null 2>&1; then
+if curl -f http://localhost:3000/api/health >/dev/null 2>&1; then
     echo "✅ Available"
 else
     echo "❌ Failed"
 fi
 
-echo -n "Nginx Health: "
-if curl -f http://localhost:8080/nginx-health >/dev/null 2>&1; then
-    echo "✅ Available"
-else
-    echo "❌ Failed"
-fi
+# Note: Nginx health check has been moved to external service
 
 echo ""
 echo "📋 Container Details:"
@@ -109,21 +83,11 @@ if [ "$VERBOSE" = true ]; then
   Started: {{.State.StartedAt}}
   Image: {{.Image}}' 2>/dev/null || echo "  Not found"
     
-    echo ""
-    echo "Nginx Container:"
-    docker inspect portfolio-nginx --format='  Status: {{.State.Status}}
-  Health: {{.State.Health.Status}}
-  Started: {{.State.StartedAt}}
-  Image: {{.Image}}' 2>/dev/null || echo "  Not found"
     
     echo ""
     echo "Recent Logs (last 10 lines):"
     echo "Portfolio:"
     docker logs --tail 10 daniel-koryat-portfolio 2>/dev/null || echo "  No logs available"
-    
-    echo ""
-    echo "Nginx:"
-    docker logs --tail 10 portfolio-nginx 2>/dev/null || echo "  No logs available"
 else
     echo "Run with --verbose for detailed container information and logs"
 fi
