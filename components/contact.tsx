@@ -15,6 +15,7 @@ import {
 import { Button } from "./ui/button";
 import { getSiteConfig } from "@/lib/utils";
 import { useState, useRef, useEffect } from "react";
+import ReCAPTCHA from "react-google-recaptcha";
 
 export function Contact() {
   const config = getSiteConfig();
@@ -29,6 +30,7 @@ export function Contact() {
     message: string;
   }>({ type: null, message: "" });
   const [mounted, setMounted] = useState(false);
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
 
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -50,6 +52,7 @@ export function Contact() {
       email: formData.get("email") as string,
       subject: formData.get("subject") as string,
       message: formData.get("message") as string,
+      recaptchaToken,
     };
 
     try {
@@ -392,11 +395,17 @@ export function Contact() {
                 />
               </div>
 
+              <ReCAPTCHA
+                sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ""}
+                onChange={setRecaptchaToken}
+                onExpired={() => setRecaptchaToken(null)}
+              />
+
               <Button
                 type="submit"
                 size="lg"
                 className="w-full group"
-                disabled={isSubmitting || !mounted}
+                disabled={isSubmitting || !mounted || !recaptchaToken}
               >
                 <Send className="w-4 h-4 sm:w-5 sm:h-5 mr-2 group-hover:animate-bounce" />
                 {isSubmitting ? "Sending..." : "Send Message"}

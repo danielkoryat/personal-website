@@ -1,18 +1,73 @@
 import { NextRequest, NextResponse } from "next/server";
 import nodemailer from "nodemailer";
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
+
+// Initialize Upstash Redis and Rate Limiter
+let redis: Redis | null = null;
+let ratelimit: Ratelimit | null = null;
+
+if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+  redis = new Redis({
+    url: process.env.UPSTASH_REDIS_REST_URL,
+    token: process.env.UPSTASH_REDIS_REST_TOKEN,
+  });
+
+  ratelimit = new Ratelimit({
+    redis: redis,
+    limiter: Ratelimit.slidingWindow(3, "1 m"), // 3 requests per 1 minute
+  });
+} else {
+  console.warn("Upstash Redis environment variables not set. Rate limiting is disabled.");
+}
 
 // Force dynamic rendering for this route
 export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
+  // Apply rate limiting if configured
+  if (ratelimit) {
+    const ip = request.ip ?? "127.0.0.1";
+    const { success } = await ratelimit.limit(ip);
+
+    if (!success) {
+      return NextResponse.json(
+        { error: "Too many requests. Please try again later." },
+        { status: 429 }
+      );
+    }
+  }
+
   try {
     const body = await request.json();
-    const { name, email, subject, message } = body;
+    const { name, email, subject, message, recaptchaToken } = body;
 
     // Validate required fields
-    if (!name || !email || !subject || !message) {
+    if (!name || !email || !subject || !message || !recaptchaToken) {
       return NextResponse.json(
-        { error: "All fields are required" },
+        { error: "All fields, including reCAPTCHA, are required" },
+        { status: 400 }
+      );
+    }
+
+    // Verify reCAPTCHA
+    const recaptchaSecret = process.env.RECAPTCHA_SECRET_KEY;
+    if (!recaptchaSecret) {
+        console.error("reCAPTCHA secret key is not set.");
+        return NextResponse.json(
+            { error: "Server configuration error." },
+            { status: 500 }
+        );
+    }
+
+    const recaptchaUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${recaptchaSecret}&response=${recaptchaToken}`;
+
+    const recaptchaResponse = await fetch(recaptchaUrl, { method: "POST" });
+    const recaptchaData = await recaptchaResponse.json();
+
+    if (!recaptchaData.success) {
+      return NextResponse.json(
+        { error: "reCAPTCHA verification failed." },
         { status: 400 }
       );
     }
@@ -35,19 +90,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create transporter using Gmail (you'll need to set up app password)
+    // Create transporter
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: process.env.EMAIL_USER, // Your Gmail address
-        pass: process.env.EMAIL_PASS, // Your Gmail app password
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
       },
     });
 
     // Email content
     const mailOptions = {
       from: process.env.EMAIL_USER,
-      to: "dan.koryat@gmail.com", // Your email to receive messages
+      to: "dan.koryat@gmail.com",
       subject: `Portfolio Contact: ${subject}`,
       html: `
         <h2>New Contact Form Submission</h2>
@@ -68,23 +123,6 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     console.error("Contact form error:", error);
-
-    // Check if it's a nodemailer error
-    if (error instanceof Error) {
-      if (error.message.includes("Invalid login")) {
-        return NextResponse.json(
-          { error: "Email service authentication failed" },
-          { status: 500 }
-        );
-      }
-      if (error.message.includes("Invalid email")) {
-        return NextResponse.json(
-          { error: "Invalid email address" },
-          { status: 400 }
-        );
-      }
-    }
-
     return NextResponse.json(
       { error: "Failed to send message. Please try again." },
       { status: 500 }
