@@ -15,7 +15,10 @@ if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) 
 
   ratelimit = new Ratelimit({
     redis: redis,
-    limiter: Ratelimit.slidingWindow(3, "1 m"), // 3 requests per 1 minute
+    limiter: Ratelimit.slidingWindow(
+      Number(process.env.RATE_LIMIT_REQUESTS || 3),
+      (process.env.RATE_LIMIT_DURATION as "1 d") || "1 d"
+    ),
   });
 } else {
   console.warn("Upstash Redis environment variables not set. Rate limiting is disabled.");
@@ -28,11 +31,11 @@ export async function POST(request: NextRequest) {
   // Apply rate limiting if configured
   if (ratelimit) {
     const ip = request.ip ?? "127.0.0.1";
-    const { success } = await ratelimit.limit(ip);
+    const { success, limit, remaining, reset } = await ratelimit.limit(ip);
 
     if (!success) {
       return NextResponse.json(
-        { error: "Too many requests. Please try again later." },
+        { error: `Rate limit exceeded. You have ${remaining} requests left. Please try again after ${new Date(reset * 1000).toLocaleTimeString()}.` },
         { status: 429 }
       );
     }
@@ -40,12 +43,35 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { name, email, subject, message, recaptchaToken } = body;
+        let { name, email, subject, message, recaptchaToken } = body;
+
+    // Sanitize inputs
+    const escapeHtml = (unsafe: string) => {
+      return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    };
+
+    name = escapeHtml(name);
+    email = escapeHtml(email);
+    subject = escapeHtml(subject);
+    message = escapeHtml(message);
 
     // Validate required fields
-    if (!name || !email || !subject || !message || !recaptchaToken) {
+        if (!name || !email || !subject || !message || !recaptchaToken) {
       return NextResponse.json(
         { error: "All fields, including reCAPTCHA, are required" },
+        { status: 400 }
+      );
+    }
+
+    // Length validation
+    if (name.length > 100 || email.length > 100 || subject.length > 200 || message.length > 5000) {
+      return NextResponse.json(
+        { error: "Input fields exceed maximum length." },
         { status: 400 }
       );
     }
@@ -53,11 +79,11 @@ export async function POST(request: NextRequest) {
     // Verify reCAPTCHA
     const recaptchaSecret = process.env.RECAPTCHA_SECRET_KEY;
     if (!recaptchaSecret) {
-        console.error("reCAPTCHA secret key is not set.");
-        return NextResponse.json(
-            { error: "Server configuration error." },
-            { status: 500 }
-        );
+      console.error("reCAPTCHA secret key is not set.");
+      return NextResponse.json(
+        { error: "Server configuration error." },
+        { status: 500 }
+      );
     }
 
     const recaptchaUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${recaptchaSecret}&response=${recaptchaToken}`;

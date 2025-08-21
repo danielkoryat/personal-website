@@ -33,6 +33,7 @@ export function Contact() {
   const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
 
   const formRef = useRef<HTMLFormElement>(null);
+  const recaptchaRef = useRef<ReCAPTCHA>(null);
 
   // Prevent hydration issues
   useEffect(() => {
@@ -73,11 +74,12 @@ export function Contact() {
         });
         // Use the ref instead of e.currentTarget for safer form reset
         // Add a small delay to ensure the success message is shown before reset
-        setTimeout(() => {
-          if (formRef.current) {
-            formRef.current.reset();
-          }
-        }, 100);
+        if (formRef.current) {
+          formRef.current.reset();
+        }
+        if (recaptchaRef.current) {
+          recaptchaRef.current.reset();
+        }
       } else {
         setSubmitStatus({
           type: "error",
@@ -396,6 +398,7 @@ export function Contact() {
               </div>
 
               <ReCAPTCHA
+                ref={recaptchaRef}
                 sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ""}
                 onChange={setRecaptchaToken}
                 onExpired={() => setRecaptchaToken(null)}
