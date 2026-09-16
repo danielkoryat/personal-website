@@ -184,32 +184,6 @@
       ]
     }
   ],
-  "projects": [
-    {
-      "id": "self-hosted-portfolio",
-      "name": "Self-Hosted Portfolio Platform",
-      "tagline": "This site — and the deployment pipeline behind it",
-      "description": "A production-grade Next.js 14 site that runs on my own hardware rather than a managed host. Ships through a GitHub Actions self-hosted runner into Docker, with a blue/green cutover that only promotes the new container once it passes both a Docker healthcheck and an HTTP probe against /api/health.",
-      "technologies": [
-        "Next.js 14",
-        "TypeScript",
-        "TailwindCSS",
-        "Docker",
-        "Nginx",
-        "GitHub Actions",
-        "Cloudflare Tunnel"
-      ],
-      "highlights": [
-        "Zero-downtime blue/green deploys with automatic rollback on a failed health probe",
-        "Contact API hardened with Upstash sliding-window rate limiting and reCAPTCHA verification",
-        "Publicly reachable through a Cloudflare Tunnel, so no inbound ports are exposed",
-        "JSON-backed content model — copy changes ship without touching components"
-      ],
-      "repoUrl": "https://github.com/danielkoryat/personal-website",
-      "liveUrl": "https://danielkoryat.com",
-      "featured": true
-    }
-  ],
   "education": [
     {
       "id": "sela-college.",

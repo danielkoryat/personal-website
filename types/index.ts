@@ -38,19 +38,6 @@ export interface Education {
   certifications?: string[];
 }
 
-export interface Project {
-  id: string;
-  name: string;
-  tagline: string;
-  description: string;
-  technologies: string[];
-  highlights?: string[];
-  repoUrl?: string;
-  liveUrl?: string;
-  /** Marks the project for the wider, emphasised card. */
-  featured?: boolean;
-}
-
 export interface ContactInfo {
   email: string;
   phone: string;
@@ -78,5 +65,4 @@ export interface SiteConfig {
   skills: Skill[];
   experience: Experience[];
   education: Education[];
-  projects?: Project[];
 }

@@ -34,7 +34,10 @@ export function Hero() {
       value: `${config.skills.filter((s) => s.category === "cloud").length}`,
       label: "AWS services in production",
     },
-    { value: `${config.projects?.length ?? 0}`, label: "Featured projects" },
+    {
+      value: `${config.skills.filter((s) => s.category === "backend").length}`,
+      label: "Backend technologies",
+    },
   ].filter((stat) => stat.value !== "0");
 
   const scrollToSection = (href: string) => {

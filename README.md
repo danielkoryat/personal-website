@@ -12,12 +12,14 @@ This website is more than just a portfolio—it's a full-stack, production-grade
 
 - **Frontend & Backend:** Next.js 14 (App Router, TypeScript)
 - **Styling:** TailwindCSS with HSL design tokens, Framer Motion for animations
+- **Images:** `next/image` with sharp, serving AVIF/WebP
 - **Email:** Nodemailer (contact form, no third-party SaaS required)
 - **Spam & abuse:** reCAPTCHA v2 + Upstash sliding-window rate limiting
 - **Data:** JSON-based CMS (easy to edit, no database needed)
 - **Containerization:** Docker & Docker Compose
 - **Web Server:** Nginx (reverse proxy, blue/green deployment)
-- **CI/CD:** GitHub Actions (self-hosted runner)
+- **Deployment:** `scripts/deploy-blue-green.sh`, run on the server (no CI
+  workflow is currently wired up — pushing to `main` does not deploy on its own)
 - **Cloudflare Tunnel:** For secure public access (no open ports required)
 
 ---
@@ -56,11 +58,10 @@ pipeline deploys it — no component changes needed.
 | --- | --- |
 | `name`, `title`, `intro` | Hero copy |
 | `avatar` | Path to your portrait under `public/`. Falls back to a monogram if the file is missing. |
-| `availability` | The green status pill in the hero |
+| `availability` | Optional green status pill in the hero. Omit the key to hide it. |
 | `siteUrl` | Canonical origin for metadata, sitemap and JSON-LD |
 | `skills` | Grouped by `category`, drives the filterable skills grid |
 | `experience` | Timeline entries; `current: true` adds the "Current" badge |
-| `projects` | Project cards; `featured: true` makes a card full-width. Omit the key entirely to hide the section. |
 | `education` | Degrees and certifications (dates optional) |
 
 ### Adding your photo
