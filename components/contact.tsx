@@ -137,7 +137,7 @@ export function Contact() {
         <SectionHeading
           eyebrow="Contact"
           title="Get In Touch"
-          description="Open to backend and platform roles, and always happy to talk shop."
+          description="Always happy to talk shop — drop me a line."
           icon={MessageSquare}
           inView={inView}
         />
