@@ -4,6 +4,9 @@
   "subtitle": "Building scalable AI-powered systems with Python, FastAPI, and AWS",
   "description": "Backend Web Developer specializing in Python/FastAPI, AWS cloud services, and AI/ML systems. Currently developing AI-powered backend platforms with microservices architecture.",
   "intro": "I'm Daniel, a backend developer with professional experience building AI-powered systems and scalable microservices on AWS. Currently working as a backend developer at Sidekick Platform, focusing on modern cloud and AI infrastructure.",
+  "siteUrl": "https://danielkoryat.com",
+  "avatar": "/daniel.jpg",
+  "availability": "Open to backend & platform engineering roles",
   "contact": {
     "email": "dan.koryat@gmail.com",
     "phone": "647-947-8332",
@@ -18,7 +21,9 @@
       "name": "Python",
       "category": "backend",
       "description": "Core backend development language with expertise in async programming, data processing, and API development",
-      "certifications": ["Python Developer Certificate"]
+      "certifications": [
+        "Python Developer Certificate"
+      ]
     },
     {
       "name": "FastAPI",
@@ -180,6 +185,32 @@
       ]
     }
   ],
+  "projects": [
+    {
+      "id": "self-hosted-portfolio",
+      "name": "Self-Hosted Portfolio Platform",
+      "tagline": "This site — and the deployment pipeline behind it",
+      "description": "A production-grade Next.js 14 site that runs on my own hardware rather than a managed host. Ships through a GitHub Actions self-hosted runner into Docker, with a blue/green cutover that only promotes the new container once it passes both a Docker healthcheck and an HTTP probe against /api/health.",
+      "technologies": [
+        "Next.js 14",
+        "TypeScript",
+        "TailwindCSS",
+        "Docker",
+        "Nginx",
+        "GitHub Actions",
+        "Cloudflare Tunnel"
+      ],
+      "highlights": [
+        "Zero-downtime blue/green deploys with automatic rollback on a failed health probe",
+        "Contact API hardened with Upstash sliding-window rate limiting and reCAPTCHA verification",
+        "Publicly reachable through a Cloudflare Tunnel, so no inbound ports are exposed",
+        "JSON-backed content model — copy changes ship without touching components"
+      ],
+      "repoUrl": "https://github.com/danielkoryat/personal-website",
+      "liveUrl": "https://danielkoryat.com",
+      "featured": true
+    }
+  ],
   "education": [
     {
       "id": "sela-college.",
@@ -189,7 +220,9 @@
       "startDate": "2023-04",
       "endDate": "2024-04",
       "description": "Intensive programming bootcamp covering full-stack development, databases, and modern web technologies",
-      "certifications": ["Full-Stack Development Certificate"]
+      "certifications": [
+        "Full-Stack Development Certificate"
+      ]
     },
     {
       "id": "harvard-cs50",
@@ -197,7 +230,9 @@
       "degree": "CS50x: Introduction to Computer Science",
       "field": "Computer Science",
       "description": "Comprehensive introduction to computer science and programming fundamentals",
-      "certifications": ["CS50x Certificate"]
+      "certifications": [
+        "CS50x Certificate"
+      ]
     },
     {
       "id": "aws-cloud-practitioner",
@@ -205,7 +240,9 @@
       "degree": "Cloud Practitioner Essentials",
       "field": "Cloud Computing",
       "description": "AWS Cloud Practitioner certification covering core AWS services and cloud concepts",
-      "certifications": ["AWS Cloud Practitioner"]
+      "certifications": [
+        "AWS Cloud Practitioner"
+      ]
     }
   ]
 }

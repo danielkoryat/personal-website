@@ -11,21 +11,25 @@ import {
   Send,
   Download,
   FileText,
+  MessageSquare,
+  CheckCircle2,
+  AlertCircle,
 } from "lucide-react";
 import { Button } from "./ui/button";
+import { SectionHeading } from "./section-heading";
 import { getSiteConfig } from "@/lib/utils";
+import { useResumeDownload } from "@/lib/use-resume-download";
 import { useState, useRef, useEffect } from "react";
 import ReCAPTCHA from "react-google-recaptcha";
 
+const RECAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY ?? "";
+
 export function Contact() {
   const config = getSiteConfig();
-  const { ref, inView } = useInView({
-    triggerOnce: true,
-    threshold: 0.1,
-  });
+  const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.1 });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<{
+  const [status, setStatus] = useState<{
     type: "success" | "error" | null;
     message: string;
   }>({ type: null, message: "" });
@@ -35,385 +39,364 @@ export function Contact() {
   const formRef = useRef<HTMLFormElement>(null);
   const recaptchaRef = useRef<ReCAPTCHA>(null);
 
-  // Prevent hydration issues
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const { download, pending, error: resumeError } = useResumeDownload();
+
+  useEffect(() => setMounted(true), []);
+
+  // Without a configured site key the widget can never produce a token, so
+  // gating submission on it would make the form permanently unusable.
+  const recaptchaEnabled = RECAPTCHA_SITE_KEY.length > 0;
+  const canSubmit =
+    mounted && !isSubmitting && (!recaptchaEnabled || Boolean(recaptchaToken));
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!mounted) return;
+    if (!canSubmit) return;
 
     setIsSubmitting(true);
-    setSubmitStatus({ type: null, message: "" });
+    setStatus({ type: null, message: "" });
 
     const formData = new FormData(e.currentTarget);
-    const data = {
-      name: formData.get("name") as string,
-      email: formData.get("email") as string,
-      subject: formData.get("subject") as string,
-      message: formData.get("message") as string,
-      recaptchaToken,
+    const payload = {
+      name: String(formData.get("name") ?? ""),
+      email: String(formData.get("email") ?? ""),
+      subject: String(formData.get("subject") ?? ""),
+      message: String(formData.get("message") ?? ""),
+      recaptchaToken: recaptchaToken ?? "",
     };
 
     try {
       const response = await fetch("/api/contact", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
       });
 
-      const result = await response.json();
+      const result = await response.json().catch(() => ({}));
 
       if (response.ok) {
-        setSubmitStatus({
+        setStatus({
           type: "success",
-          message: "Message sent successfully! I'll get back to you soon.",
+          message: "Message sent — I'll get back to you shortly.",
         });
-        // Use the ref instead of e.currentTarget for safer form reset
-        // Add a small delay to ensure the success message is shown before reset
-        if (formRef.current) {
-          formRef.current.reset();
-        }
-        if (recaptchaRef.current) {
-          recaptchaRef.current.reset();
-        }
+        formRef.current?.reset();
       } else {
-        setSubmitStatus({
+        setStatus({
           type: "error",
           message: result.error || "Failed to send message. Please try again.",
         });
       }
-    } catch (error) {
-      // Check if the error is actually a network error or just a response parsing issue
-      console.error("Contact form error:", error);
-      setSubmitStatus({
+    } catch (cause) {
+      console.error("Contact form error:", cause);
+      setStatus({
         type: "error",
-        message:
-          "There was an issue processing your request. Please try again.",
+        message: "Couldn't reach the server. Please try again.",
       });
     } finally {
+      // The token is single-use — reset it whatever the outcome, so a retry
+      // doesn't fail reCAPTCHA verification with a stale value.
+      recaptchaRef.current?.reset();
+      setRecaptchaToken(null);
       setIsSubmitting(false);
     }
   };
 
-  const handleResumeDownload = async (format: "pdf" | "docx") => {
-    if (!mounted) return;
-    
-    try {
-      const response = await fetch(`/api/resume?format=${format}`);
+  const contactMethods = [
+    {
+      icon: Mail,
+      label: "Email",
+      value: config.contact.email,
+      href: `mailto:${config.contact.email}`,
+      tone: "text-blue-600 dark:text-blue-400",
+      bg: "bg-blue-100 dark:bg-blue-900/30",
+    },
+    {
+      icon: Phone,
+      label: "Phone",
+      value: config.contact.phone,
+      href: `tel:${config.contact.phone.replace(/[^\d+]/g, "")}`,
+      tone: "text-emerald-600 dark:text-emerald-400",
+      bg: "bg-emerald-100 dark:bg-emerald-900/30",
+    },
+    {
+      icon: MapPin,
+      label: "Location",
+      value: config.contact.location,
+      href: undefined,
+      tone: "text-purple-600 dark:text-purple-400",
+      bg: "bg-purple-100 dark:bg-purple-900/30",
+    },
+  ];
 
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `Daniel_Koryat_Resume.${format}`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-      } else {
-        alert(
-          `Resume not available in ${format.toUpperCase()} format. Please try PDF.`
-        );
-      }
-    } catch (error) {
-      console.error("Resume download error:", error);
-      alert("Failed to download resume. Please try again.");
-    }
-  };
+  const inputClass =
+    "w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-base text-gray-900 transition-colors placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 dark:border-gray-600 dark:bg-gray-900 dark:text-white";
 
   return (
-    <section
-      id="contact"
-      className="py-16 sm:py-20 bg-gray-50 dark:bg-gray-800"
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div
-          ref={ref}
-          initial={{ opacity: 0, y: 50 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8 }}
-          className="text-center mb-12 sm:mb-16"
-        >
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">
-            <span className="gradient-text">Get In Touch</span>
-          </h2>
-          <p className="text-base sm:text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto px-4 sm:px-0">
-            I&apos;m always interested in hearing about new opportunities and
-            exciting projects
-          </p>
-        </motion.div>
+    <section id="contact" className="bg-gray-50 py-20 dark:bg-gray-900 sm:py-24">
+      <div className="container-width section-padding" ref={ref}>
+        <SectionHeading
+          eyebrow="Contact"
+          title="Get In Touch"
+          description="Open to backend and platform roles, and always happy to talk shop."
+          icon={MessageSquare}
+          inView={inView}
+        />
 
-        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
-          {/* Contact Information */}
+        <div className="grid gap-8 lg:grid-cols-5 lg:gap-12">
+          {/* Details */}
           <motion.div
-            initial={{ opacity: 0, x: -50 }}
+            initial={{ opacity: 0, x: -24 }}
             animate={inView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="space-y-6 sm:space-y-8 order-2 lg:order-1"
+            transition={{ duration: 0.6, delay: 0.15 }}
+            className="order-2 space-y-6 lg:order-1 lg:col-span-2"
           >
-            <div>
-              <h3 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white mb-4 sm:mb-6">
-                Let&apos;s Connect
+            <div className="space-y-3">
+              {contactMethods.map((method) => {
+                const Icon = method.icon;
+                const content = (
+                  <>
+                    <div
+                      className={`flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl ${method.bg}`}
+                    >
+                      <Icon className={`h-5 w-5 ${method.tone}`} />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                        {method.label}
+                      </p>
+                      <p
+                        className={`truncate text-sm font-medium sm:text-base ${method.tone}`}
+                      >
+                        {method.value}
+                      </p>
+                    </div>
+                  </>
+                );
+
+                return method.href ? (
+                  <a
+                    key={method.label}
+                    href={method.href}
+                    className="surface flex items-center gap-4 p-4 transition-all hover:-translate-y-0.5 hover:shadow-md"
+                  >
+                    {content}
+                  </a>
+                ) : (
+                  <div
+                    key={method.label}
+                    className="surface flex items-center gap-4 p-4"
+                  >
+                    {content}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Socials */}
+            <div className="flex gap-3">
+              {config.contact.githubUrl && (
+                <a
+                  href={config.contact.githubUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="touch-target rounded-xl bg-gray-900 text-white transition-colors hover:bg-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600"
+                  aria-label="GitHub profile"
+                >
+                  <Github className="h-5 w-5" />
+                </a>
+              )}
+              {config.contact.linkedinUrl && (
+                <a
+                  href={config.contact.linkedinUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="touch-target rounded-xl bg-blue-600 text-white transition-colors hover:bg-blue-700"
+                  aria-label="LinkedIn profile"
+                >
+                  <Linkedin className="h-5 w-5" />
+                </a>
+              )}
+            </div>
+
+            {/* Resume */}
+            <div className="surface p-5">
+              <h3 className="mb-3 text-sm font-semibold text-gray-900 dark:text-white">
+                Resume
               </h3>
-              <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-6 sm:mb-8 leading-relaxed">
-                I&apos;m always open to discussing exciting projects and
-                collaboration opportunities. Whether you have a technical
-                question, want to explore potential partnerships, or just want
-                to connect, I&apos;d love to hear from you!
-              </p>
-            </div>
-
-            <div className="space-y-4 sm:space-y-6">
-              <div className="flex items-center space-x-3 sm:space-x-4">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Mail className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600 dark:text-blue-400" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <h4 className="font-medium text-gray-900 dark:text-white text-sm sm:text-base">
-                    Email
-                  </h4>
-                  <a
-                    href={`mailto:${config.contact.email}`}
-                    className="text-blue-600 dark:text-blue-400 hover:underline text-sm sm:text-base break-all"
-                  >
-                    {config.contact.email}
-                  </a>
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-3 sm:space-x-4">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Phone className="w-5 h-5 sm:w-6 sm:h-6 text-green-600 dark:text-green-400" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <h4 className="font-medium text-gray-900 dark:text-white text-sm sm:text-base">
-                    Phone
-                  </h4>
-                  <a
-                    href={`tel:${config.contact.phone}`}
-                    className="text-green-600 dark:text-green-400 hover:underline text-sm sm:text-base"
-                  >
-                    {config.contact.phone}
-                  </a>
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-3 sm:space-x-4">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <MapPin className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600 dark:text-purple-400" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <h4 className="font-medium text-gray-900 dark:text-white text-sm sm:text-base">
-                    Location
-                  </h4>
-                  <p className="text-purple-600 dark:text-purple-400 text-sm sm:text-base">
-                    {config.contact.location}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Social Links */}
-            <div>
-              <h4 className="font-medium text-gray-900 dark:text-white mb-3 sm:mb-4 text-sm sm:text-base">
-                Follow Me
-              </h4>
-              <div className="flex space-x-3 sm:space-x-4">
-                {config.contact.githubUrl && (
-                  <a
-                    href={config.contact.githubUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-9 h-9 sm:w-10 sm:h-10 bg-gray-900 dark:bg-gray-700 rounded-lg flex items-center justify-center text-white hover:bg-gray-800 dark:hover:bg-gray-600 transition-colors"
-                    title="GitHub Profile"
-                  >
-                    <Github className="w-4 h-4 sm:w-5 sm:h-5" />
-                  </a>
-                )}
-                {config.contact.linkedinUrl && (
-                  <a
-                    href={config.contact.linkedinUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-9 h-9 sm:w-10 sm:h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white hover:bg-blue-700 transition-colors"
-                    title="LinkedIn Profile"
-                  >
-                    <Linkedin className="w-4 h-4 sm:w-5 sm:h-5" />
-                  </a>
-                )}
-              </div>
-            </div>
-
-            {/* Resume Download */}
-            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 sm:p-6">
-              <h4 className="font-medium text-green-900 dark:text-green-100 mb-3 text-sm sm:text-base">
-                Download Resume
-              </h4>
-              <div className="space-y-2">
-                <button
-                  onClick={() => handleResumeDownload("pdf")}
-                  className="w-full flex items-center justify-center space-x-2 bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg text-sm transition-colors"
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => download("pdf")}
+                  disabled={pending !== null}
                 >
-                  <FileText className="w-4 h-4" />
-                  <span>Download PDF</span>
-                </button>
-                <button
-                  onClick={() => handleResumeDownload("docx")}
-                  className="w-full flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-sm transition-colors"
+                  <FileText className="mr-2 h-4 w-4" />
+                  {pending === "pdf" ? "Preparing…" : "PDF"}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => download("docx")}
+                  disabled={pending !== null}
                 >
-                  <Download className="w-4 h-4" />
-                  <span>Download DOCX</span>
-                </button>
+                  <Download className="mr-2 h-4 w-4" />
+                  {pending === "docx" ? "Preparing…" : "DOCX"}
+                </Button>
               </div>
-            </div>
-
-            {/* Current Status */}
-            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 sm:p-6">
-              <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-2 text-sm sm:text-base">
-                Current Status
-              </h4>
-              <p className="text-blue-800 dark:text-blue-200 text-xs sm:text-sm">
-                Backend Developer at Sidekick Platform
-              </p>
-              <p className="text-blue-700 dark:text-blue-300 text-xs sm:text-sm mt-1">
-                Professional experience building AI backend infrastructure
-              </p>
+              {resumeError && (
+                <p
+                  role="status"
+                  className="mt-3 text-sm text-red-600 dark:text-red-400"
+                >
+                  {resumeError}
+                </p>
+              )}
             </div>
           </motion.div>
 
-          {/* Contact Form */}
+          {/* Form */}
           <motion.div
-            initial={{ opacity: 0, x: 50 }}
+            initial={{ opacity: 0, x: 24 }}
             animate={inView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="bg-white dark:bg-gray-700 rounded-xl p-4 sm:p-6 lg:p-8 shadow-lg order-1 lg:order-2"
+            transition={{ duration: 0.6, delay: 0.25 }}
+            className="surface order-1 p-6 shadow-lg lg:order-2 lg:col-span-3 sm:p-8"
           >
-            <h3 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white mb-4 sm:mb-6">
+            <h3 className="mb-6 text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl">
               Send a Message
             </h3>
 
-            {!mounted && (
-              <div className="space-y-4 sm:space-y-6">
-                <div className="animate-pulse">
-                  <div className="h-4 bg-gray-200 dark:bg-gray-600 rounded mb-4"></div>
-                  <div className="h-4 bg-gray-200 dark:bg-gray-600 rounded mb-4"></div>
-                  <div className="h-4 bg-gray-200 dark:bg-gray-600 rounded mb-4"></div>
-                  <div className="h-32 bg-gray-200 dark:bg-gray-600 rounded mb-4"></div>
-                  <div className="h-12 bg-gray-200 dark:bg-gray-600 rounded"></div>
-                </div>
+            {!mounted ? (
+              <div className="space-y-4" aria-hidden="true">
+                <div className="h-12 animate-pulse rounded-lg bg-gray-200 dark:bg-gray-700" />
+                <div className="h-12 animate-pulse rounded-lg bg-gray-200 dark:bg-gray-700" />
+                <div className="h-32 animate-pulse rounded-lg bg-gray-200 dark:bg-gray-700" />
+                <div className="h-12 animate-pulse rounded-lg bg-gray-200 dark:bg-gray-700" />
               </div>
-            )}
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-5" ref={formRef}>
+                {status.type && (
+                  <div
+                    role="status"
+                    aria-live="polite"
+                    className={`flex items-start gap-2.5 rounded-lg border p-3.5 text-sm ${
+                      status.type === "success"
+                        ? "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200"
+                        : "border-red-200 bg-red-50 text-red-800 dark:border-red-800 dark:bg-red-950/40 dark:text-red-200"
+                    }`}
+                  >
+                    {status.type === "success" ? (
+                      <CheckCircle2 className="mt-px h-4 w-4 flex-shrink-0" />
+                    ) : (
+                      <AlertCircle className="mt-px h-4 w-4 flex-shrink-0" />
+                    )}
+                    <span>{status.message}</span>
+                  </div>
+                )}
 
-            {mounted && (
-              <form
-                onSubmit={handleSubmit}
-                className="space-y-4 sm:space-y-6"
-                ref={formRef}
-              >
-              {/* Status Messages */}
-              {submitStatus.type && (
-                <div
-                  className={`p-3 rounded-lg text-sm ${
-                    submitStatus.type === "success"
-                      ? "bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-800 dark:text-green-200"
-                      : "bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200"
-                  }`}
-                >
-                  {submitStatus.message}
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <div>
+                    <label
+                      htmlFor="name"
+                      className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300"
+                    >
+                      Name
+                    </label>
+                    <input
+                      type="text"
+                      id="name"
+                      name="name"
+                      required
+                      maxLength={100}
+                      autoComplete="name"
+                      className={inputClass}
+                      placeholder="Your name"
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="email"
+                      className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300"
+                    >
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      id="email"
+                      name="email"
+                      required
+                      maxLength={150}
+                      autoComplete="email"
+                      className={inputClass}
+                      placeholder="you@example.com"
+                    />
+                  </div>
                 </div>
-              )}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+
                 <div>
                   <label
-                    htmlFor="name"
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                    htmlFor="subject"
+                    className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300"
                   >
-                    Name
+                    Subject
                   </label>
                   <input
                     type="text"
-                    id="name"
-                    name="name"
+                    id="subject"
+                    name="subject"
                     required
-                    className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white text-sm sm:text-base"
-                    placeholder="Your name"
+                    maxLength={200}
+                    className={inputClass}
+                    placeholder="What's this about?"
                   />
                 </div>
 
                 <div>
                   <label
-                    htmlFor="email"
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                    htmlFor="message"
+                    className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300"
                   >
-                    Email
+                    Message
                   </label>
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
+                  <textarea
+                    id="message"
+                    name="message"
+                    rows={5}
                     required
-                    className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white text-sm sm:text-base"
-                    placeholder="your.email@example.com"
+                    minLength={10}
+                    maxLength={5000}
+                    className={`${inputClass} resize-none`}
+                    placeholder="Tell me about the role or project…"
                   />
                 </div>
-              </div>
 
-              <div>
-                <label
-                  htmlFor="subject"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                {recaptchaEnabled && (
+                  <ReCAPTCHA
+                    ref={recaptchaRef}
+                    sitekey={RECAPTCHA_SITE_KEY}
+                    onChange={setRecaptchaToken}
+                    onExpired={() => setRecaptchaToken(null)}
+                  />
+                )}
+
+                <Button
+                  type="submit"
+                  size="lg"
+                  className="group w-full"
+                  disabled={!canSubmit}
                 >
-                  Subject
-                </label>
-                <input
-                  type="text"
-                  id="subject"
-                  name="subject"
-                  required
-                  className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white text-sm sm:text-base"
-                  placeholder="What's this about?"
-                />
-              </div>
+                  <Send className="mr-2 h-5 w-5 transition-transform group-hover:translate-x-0.5" />
+                  {isSubmitting ? "Sending…" : "Send Message"}
+                </Button>
 
-              <div>
-                <label
-                  htmlFor="message"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                >
-                  Message
-                </label>
-                <textarea
-                  id="message"
-                  name="message"
-                  rows={5}
-                  required
-                  className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white resize-none text-sm sm:text-base"
-                  placeholder="Tell me about your project or opportunity..."
-                />
-              </div>
-
-              <ReCAPTCHA
-                ref={recaptchaRef}
-                sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ""}
-                onChange={setRecaptchaToken}
-                onExpired={() => setRecaptchaToken(null)}
-              />
-
-              <Button
-                type="submit"
-                size="lg"
-                className="w-full group"
-                disabled={isSubmitting || !mounted || !recaptchaToken}
-              >
-                <Send className="w-4 h-4 sm:w-5 sm:h-5 mr-2 group-hover:animate-bounce" />
-                {isSubmitting ? "Sending..." : "Send Message"}
-              </Button>
-            </form>
+                {recaptchaEnabled && !recaptchaToken && (
+                  <p className="text-center text-xs text-gray-500 dark:text-gray-400">
+                    Complete the reCAPTCHA above to enable sending.
+                  </p>
+                )}
+              </form>
             )}
           </motion.div>
         </div>

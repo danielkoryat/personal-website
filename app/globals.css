@@ -23,7 +23,10 @@
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
     --ring: 221.2 83.2% 53.3%;
-    --radius: 0.5rem;
+    --radius: 0.75rem;
+
+    /* Height of the fixed header, used for anchor scroll offsets. */
+    --header-height: 4rem;
   }
 
   .dark {
@@ -45,109 +48,87 @@
     --destructive-foreground: 210 40% 98%;
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 94.1%;
+    --ring: 217.2 91.2% 59.8%;
   }
 }
 
 @layer base {
   * {
-    @apply border-gray-200 dark:border-gray-700;
+    @apply border-border;
   }
-  body {
-    @apply bg-white dark:bg-gray-900 text-gray-900 dark:text-white;
-    /* Improve mobile scrolling */
-    -webkit-overflow-scrolling: touch;
+
+  html {
     scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
   }
-  
-  /* Ensure minimum touch target size for mobile */
-  button, a, input, textarea, select {
-    @apply min-h-[44px] min-w-[44px];
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    -webkit-overflow-scrolling: touch;
+    /* `clip` instead of `hidden` so it does not create a scroll container,
+       which would break `position: sticky` and smooth scrolling. */
+    overflow-x: clip;
   }
-  
-  /* Improve mobile form elements */
-  input, textarea, select {
-    @apply text-base; /* Prevent zoom on iOS */
+
+  /* Anchor targets clear the fixed header instead of hiding underneath it. */
+  section[id] {
+    scroll-margin-top: var(--header-height);
   }
-  
-  /* Better mobile focus states */
-  button:focus, a:focus, input:focus, textarea:focus, select:focus {
-    @apply outline-none ring-2 ring-blue-500 ring-offset-2 ring-offset-white dark:ring-offset-gray-900;
+
+  /* Prevent iOS from zooming when a field is focused. */
+  input,
+  textarea,
+  select {
+    @apply text-base;
   }
-  
-  /* Body scroll lock for mobile menu */
-  body.menu-open {
-    overflow: hidden !important;
-    position: fixed !important;
-    width: 100% !important;
-    height: 100% !important;
+
+  /* One consistent, visible focus ring — keyboard only, so pointer users
+     do not see a ring on every click. */
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+
+  * {
+    -webkit-tap-highlight-color: transparent;
   }
 }
 
 @layer components {
   .gradient-text {
-    @apply bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-purple-400;
   }
-  
-  .gradient-bg {
-    @apply bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900;
-  }
-  
-  .card-hover {
-    @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
-  }
-  
 
-  
-  /* Mobile-specific utilities */
-  .mobile-touch-target {
-    @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
+  .gradient-bg {
+    @apply bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-950 dark:via-gray-900 dark:to-blue-950;
   }
-  
-  .mobile-safe-area {
+
+  .card-hover {
+    @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-lg;
+  }
+
+  /* Frosted panel used by cards across the site. */
+  .surface {
+    @apply rounded-2xl border border-gray-200/70 bg-white/70 backdrop-blur-sm dark:border-gray-700/60 dark:bg-gray-800/60;
+  }
+
+  /* Opt-in 44px touch target — applied to icon buttons and nav links only,
+     never globally, so inline text links keep their natural line height. */
+  .touch-target {
+    @apply inline-flex min-h-[44px] min-w-[44px] items-center justify-center;
+  }
+
+  .section-padding {
     @apply px-4 sm:px-6 lg:px-8;
   }
-  
-  .mobile-text-responsive {
-    @apply text-sm sm:text-base;
-  }
-  
-  .mobile-heading-responsive {
-    @apply text-2xl sm:text-3xl md:text-4xl;
-  }
-  
-  .mobile-spacing-responsive {
-    @apply space-y-4 sm:space-y-6 lg:space-y-8;
-  }
-  
-  .mobile-padding-responsive {
-    @apply p-4 sm:p-6 lg:p-8;
-  }
-  
-  .mobile-grid-responsive {
-    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3;
-  }
-  
-  /* Mobile menu specific styles */
-  .mobile-menu-container {
-    /* Ensure menu is above header */
-    z-index: 50;
-    /* Ensure proper positioning */
-    top: 0;
-    right: 0;
-    height: 100vh;
-    height: 100dvh; /* Dynamic viewport height for mobile */
-  }
-  
-  /* Ensure header stays above content but below mobile menu */
-  header {
-    z-index: 40;
+
+  .container-width {
+    @apply mx-auto max-w-7xl;
   }
 }
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 10px;
 }
 
 ::-webkit-scrollbar-track {
@@ -155,52 +136,38 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-gray-300 dark:bg-gray-600 rounded-full;
+  @apply rounded-full bg-gray-300 dark:bg-gray-600;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   @apply bg-gray-400 dark:bg-gray-500;
 }
 
-/* Mobile-specific improvements */
-@media (max-width: 640px) {
-  /* Ensure proper viewport height on mobile */
+::selection {
+  @apply bg-blue-200 dark:bg-blue-800;
+}
+
+/* Use the dynamic viewport unit on mobile so the URL bar does not cause
+   the hero to overflow. */
+@supports (height: 100dvh) {
   .min-h-screen {
-    min-height: 100vh;
-    min-height: 100dvh; /* Dynamic viewport height for mobile */
-  }
-  
-  /* Improve mobile button interactions */
-  button, a {
-    @apply active:scale-95 transition-transform duration-150;
-  }
-  
-  /* Better mobile form spacing */
-  form {
-    @apply space-y-4;
-  }
-  
-  /* Mobile-optimized text selection */
-  ::selection {
-    @apply bg-blue-200 dark:bg-blue-800;
-  }
-  
-  /* Ensure mobile menu is properly positioned */
-  .mobile-menu-container {
-    top: 0 !important;
-    right: 0 !important;
-    height: 100vh !important;
-    height: 100dvh !important;
+    min-height: 100dvh;
   }
 }
 
-/* Prevent horizontal scroll on mobile */
-html, body {
-  overflow-x: hidden;
-  width: 100%;
-}
+/* Honour the OS "reduce motion" setting: drop the ambient animations and
+   collapse transitions rather than leaving them running. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 
-/* Improve mobile performance */
-* {
-  -webkit-tap-highlight-color: transparent;
-} 
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

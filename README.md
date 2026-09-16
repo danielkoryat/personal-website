@@ -11,8 +11,9 @@ This website is more than just a portfolio—it's a full-stack, production-grade
 ### Tech Stack & Architecture
 
 - **Frontend & Backend:** Next.js 14 (App Router, TypeScript)
-- **Styling:** TailwindCSS, Framer Motion for animations
+- **Styling:** TailwindCSS with HSL design tokens, Framer Motion for animations
 - **Email:** Nodemailer (contact form, no third-party SaaS required)
+- **Spam & abuse:** reCAPTCHA v2 + Upstash sliding-window rate limiting
 - **Data:** JSON-based CMS (easy to edit, no database needed)
 - **Containerization:** Docker & Docker Compose
 - **Web Server:** Nginx (reverse proxy, blue/green deployment)
@@ -21,25 +22,70 @@ This website is more than just a portfolio—it's a full-stack, production-grade
 
 ---
 
-## Content Management
+## Getting Started
 
-The website uses a simple JSON-based content management system for easy updates:
+```bash
+npm install
+cp .env.example .env.local   # then fill in the values you need
+npm run dev
+```
 
-### How to Update Content:
-1. **Edit the configuration file** at `data/site-config.json`
-2. **Update your skills, experience, and other content** directly in the JSON file
-3. **Push changes to trigger automatic deployment** via the CI/CD pipeline
+The site runs without any environment variables — the contact form disables
+its reCAPTCHA widget and rate limiting logs a warning and steps aside. See
+[`.env.example`](.env.example) for what each variable does.
 
-### Content Structure:
-- Skills and expertise with categories and certifications
-- Professional experience with detailed descriptions
-- Contact information and personal details
-- All content is version-controlled and easily maintainable
+Useful scripts:
+
+| Command | What it does |
+| --- | --- |
+| `npm run dev` | Local dev server |
+| `npm run build` | Production build (`output: standalone`) |
+| `npm run test` | Type-check + lint |
 
 ---
+
+## Content Management
+
+All copy lives in [`data/site-config.json`](data/site-config.json) and is typed
+by [`types/index.ts`](types/index.ts). Edit the JSON, push, and the CI/CD
+pipeline deploys it — no component changes needed.
+
+### What you can edit
+
+| Key | Purpose |
+| --- | --- |
+| `name`, `title`, `intro` | Hero copy |
+| `avatar` | Path to your portrait under `public/`. Falls back to a monogram if the file is missing. |
+| `availability` | The green status pill in the hero |
+| `siteUrl` | Canonical origin for metadata, sitemap and JSON-LD |
+| `skills` | Grouped by `category`, drives the filterable skills grid |
+| `experience` | Timeline entries; `current: true` adds the "Current" badge |
+| `projects` | Project cards; `featured: true` makes a card full-width. Omit the key entirely to hide the section. |
+| `education` | Degrees and certifications (dates optional) |
+
+### Adding your photo
+
+Drop a square portrait at `public/daniel.jpg` (roughly 800×800 is plenty) and
+it appears in the hero automatically. To use a different filename, point
+`avatar` in `site-config.json` at it. If the file is absent the site renders a
+gradient monogram instead, so nothing breaks either way.
+
+---
+
+## SEO
+
+Handled by Next.js file conventions — no manual asset management:
+
+- `app/icon.tsx` — generated favicon
+- `app/opengraph-image.tsx` — generated 1200×630 link-preview card
+- `app/sitemap.ts` / `app/robots.ts` — generated `sitemap.xml` and `robots.txt`
+- `app/layout.tsx` — schema.org `Person` JSON-LD, built from `site-config.json`
+
+---
+
 ## Questions or Want to Connect?
 
 - [LinkedIn](https://www.linkedin.com/in/daniel-koryat)
 - [GitHub](https://github.com/danielkoryat)
 
-Feel free to fork, star, or open an issue if you have questions or want to contribute! 
+Feel free to fork, star, or open an issue if you have questions or want to contribute!

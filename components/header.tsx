@@ -1,81 +1,97 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
 import { Button } from "./ui/button";
 
+const navItems = [
+  { name: "Skills", href: "#skills" },
+  { name: "Experience", href: "#experience" },
+  { name: "Projects", href: "#projects" },
+  { name: "Contact", href: "#contact" },
+];
+
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState<string>("");
+  const panelRef = useRef<HTMLDivElement>(null);
+  const toggleRef = useRef<HTMLButtonElement>(null);
 
-  // Handle scroll effect
+  // Shrink/frost the bar once the page has scrolled past the hero top.
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-    };
-
+    const handleScroll = () => setIsScrolled(window.scrollY > 24);
+    handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Close mobile menu when clicking outside or pressing escape
+  // Scroll spy: highlight whichever section currently owns the viewport.
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Element;
-      if (isMobileMenuOpen && !target.closest(".mobile-menu-container")) {
-        setIsMobileMenuOpen(false);
-      }
+    const sections = navItems
+      .map((item) => document.querySelector<HTMLElement>(item.href))
+      .filter((el): el is HTMLElement => el !== null);
+
+    if (sections.length === 0) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+
+        if (visible) setActiveSection(`#${visible.target.id}`);
+      },
+      // Bias the band toward the upper half so a section registers as active
+      // roughly when it fills the screen.
+      { rootMargin: "-20% 0px -60% 0px", threshold: [0.1, 0.5, 1] }
+    );
+
+    sections.forEach((section) => observer.observe(section));
+    return () => observer.disconnect();
+  }, []);
+
+  // Close the drawer on Escape or an outside click, and lock body scroll while
+  // it is open. The toggle button is excluded from the outside-click check so
+  // that tapping it closes the menu instead of closing-then-reopening it.
+  useEffect(() => {
+    if (!isMobileMenuOpen) return;
+
+    const handlePointerDown = (event: MouseEvent | TouchEvent) => {
+      const target = event.target as Node;
+      if (panelRef.current?.contains(target)) return;
+      if (toggleRef.current?.contains(target)) return;
+      setIsMobileMenuOpen(false);
     };
 
-    const handleEscapeKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && isMobileMenuOpen) {
-        setIsMobileMenuOpen(false);
-      }
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setIsMobileMenuOpen(false);
     };
 
-    if (isMobileMenuOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-      document.addEventListener("keydown", handleEscapeKey);
-      // Prevent body scroll when menu is open
-      document.body.style.overflow = "hidden";
-      document.body.style.position = "fixed";
-      document.body.style.width = "100%";
-    } else {
-      document.body.style.overflow = "";
-      document.body.style.position = "";
-      document.body.style.width = "";
-    }
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("keydown", handleEscape);
+
+    // Preserve the scroll position: `position: fixed` on body would reset it.
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
 
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("keydown", handleEscapeKey);
-      document.body.style.overflow = "";
-      document.body.style.position = "";
-      document.body.style.width = "";
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("keydown", handleEscape);
+      document.body.style.overflow = previousOverflow;
     };
   }, [isMobileMenuOpen]);
 
-  const navItems = [
-    { name: "Skills", href: "#skills" },
-    { name: "Experience", href: "#experience" },
-    { name: "Contact", href: "#contact" },
-  ];
-
   const scrollToSection = useCallback((href: string) => {
+    setIsMobileMenuOpen(false);
     const element = document.querySelector(href);
     if (element) {
-      // Close menu first
-      setIsMobileMenuOpen(false);
-
-      // Small delay to ensure menu is closed before scrolling
-      setTimeout(() => {
-        element.scrollIntoView({
-          behavior: "smooth",
-          block: "start",
-        });
-      }, 100);
+      element.scrollIntoView({ behavior: "smooth", block: "start" });
+      // Move keyboard focus with the viewport so tab order follows the jump.
+      (element as HTMLElement).setAttribute("tabindex", "-1");
+      (element as HTMLElement).focus({ preventScroll: true });
     }
   }, []);
 
@@ -85,29 +101,24 @@ export function Header() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
-  const toggleMobileMenu = useCallback(() => {
-    setIsMobileMenuOpen((prev) => !prev);
-  }, []);
-
   return (
     <>
-      {/* Header */}
       <motion.header
         initial={{ y: -100 }}
         animate={{ y: 0 }}
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        transition={{ duration: 0.4, ease: "easeOut" }}
+        className={`fixed inset-x-0 top-0 z-40 transition-all duration-300 ${
           isScrolled
-            ? "bg-white/95 backdrop-blur-md shadow-lg dark:bg-gray-900/95"
-            : "bg-transparent"
+            ? "border-b border-gray-200/70 bg-white/80 shadow-sm backdrop-blur-md dark:border-gray-800/70 dark:bg-gray-950/80"
+            : "border-b border-transparent bg-transparent"
         }`}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            {/* Logo */}
-            <motion.div whileHover={{ scale: 1.05 }} className="flex-shrink-0">
+        <div className="container-width section-padding">
+          <div className="flex h-16 items-center justify-between">
+            <motion.div whileHover={{ scale: 1.03 }} className="flex-shrink-0">
               <a
                 href="#"
-                className="text-xl font-bold gradient-text block py-2 mobile-touch-target"
+                className="block py-2 text-xl font-bold gradient-text"
                 onClick={handleLogoClick}
                 aria-label="Go to top of page"
               >
@@ -115,52 +126,68 @@ export function Header() {
               </a>
             </motion.div>
 
-            {/* Desktop Navigation */}
             <nav
-              className="hidden md:flex space-x-8"
+              className="hidden items-center gap-1 md:flex"
               aria-label="Main navigation"
             >
-              {navItems.map((item) => (
-                <button
-                  key={item.name}
-                  onClick={() => scrollToSection(item.href)}
-                  className="text-gray-700 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400 transition-colors duration-200 font-medium py-2 px-1 mobile-touch-target"
-                  aria-label={`Navigate to ${item.name} section`}
-                >
-                  {item.name}
-                </button>
-              ))}
+              {navItems.map((item) => {
+                const isActive = activeSection === item.href;
+                return (
+                  <button
+                    key={item.name}
+                    onClick={() => scrollToSection(item.href)}
+                    aria-current={isActive ? "true" : undefined}
+                    className={`relative rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                      isActive
+                        ? "text-blue-600 dark:text-blue-400"
+                        : "text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+                    }`}
+                  >
+                    {item.name}
+                    {isActive && (
+                      <motion.span
+                        layoutId="nav-underline"
+                        className="absolute inset-x-3 -bottom-0.5 h-0.5 rounded-full bg-gradient-to-r from-blue-600 to-purple-600"
+                        transition={{
+                          type: "spring",
+                          stiffness: 350,
+                          damping: 30,
+                        }}
+                      />
+                    )}
+                  </button>
+                );
+              })}
             </nav>
 
-            {/* Right side - Theme toggle and CTA */}
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center gap-2">
               <ThemeToggle />
               <Button
                 onClick={() => scrollToSection("#contact")}
+                size="sm"
                 className="hidden sm:inline-flex"
-                aria-label="Get in touch"
               >
                 Get in Touch
               </Button>
 
-              {/* Mobile menu button */}
               <button
-                onClick={toggleMobileMenu}
-                className="md:hidden p-2 rounded-md text-gray-700 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400 transition-colors duration-200 mobile-touch-target"
+                ref={toggleRef}
+                onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+                className="touch-target rounded-lg text-gray-700 transition-colors hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400 md:hidden"
                 aria-label={
-                  isMobileMenuOpen ? "Close mobile menu" : "Open mobile menu"
+                  isMobileMenuOpen ? "Close navigation menu" : "Open navigation menu"
                 }
                 aria-expanded={isMobileMenuOpen}
                 aria-controls="mobile-menu"
               >
-                {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                {isMobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
               </button>
             </div>
           </div>
         </div>
       </motion.header>
 
-      {/* Mobile Navigation Overlay */}
+      {/* Drawer sits above the header (z-50 vs z-40) so the scrim covers it. */}
       <AnimatePresence>
         {isMobileMenuOpen && (
           <motion.div
@@ -168,54 +195,59 @@ export function Header() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 md:hidden"
-            aria-hidden="true"
+            className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm md:hidden"
           >
             <motion.div
+              ref={panelRef}
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="mobile-menu-container absolute top-0 right-0 h-full w-80 max-w-[85vw] bg-white dark:bg-gray-900 shadow-2xl"
+              transition={{ type: "spring", damping: 28, stiffness: 260 }}
+              className="absolute right-0 top-0 flex h-full w-80 max-w-[85vw] flex-col bg-white shadow-2xl dark:bg-gray-950"
               id="mobile-menu"
               role="dialog"
               aria-modal="true"
-              aria-label="Mobile navigation menu"
+              aria-label="Navigation menu"
             >
-              <div className="flex flex-col h-full">
-                {/* Mobile menu items */}
-                <nav
-                  className="flex-1 px-6 py-8"
-                  aria-label="Mobile navigation"
+              <div className="flex h-16 items-center justify-end px-4">
+                <button
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="touch-target rounded-lg text-gray-600 dark:text-gray-400"
+                  aria-label="Close navigation menu"
                 >
-                  <div className="space-y-2">
-                    {navItems.map((item, index) => (
-                      <motion.button
-                        key={item.name}
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.1 }}
-                        onClick={() => scrollToSection(item.href)}
-                        className="w-full text-left py-4 px-4 text-lg text-gray-700 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400 transition-colors duration-200 font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 mobile-touch-target"
-                        aria-label={`Navigate to ${item.name} section`}
-                      >
-                        {item.name}
-                      </motion.button>
-                    ))}
-                  </div>
-                </nav>
+                  <X size={22} />
+                </button>
+              </div>
 
-                {/* Mobile menu footer */}
-                <div className="p-6 border-t border-gray-200 dark:border-gray-700">
-                  <Button
-                    onClick={() => scrollToSection("#contact")}
-                    className="w-full"
-                    size="lg"
-                    aria-label="Get in touch"
-                  >
-                    Get in Touch
-                  </Button>
+              <nav className="flex-1 px-4 py-2" aria-label="Mobile navigation">
+                <div className="space-y-1">
+                  {navItems.map((item, index) => (
+                    <motion.button
+                      key={item.name}
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                      onClick={() => scrollToSection(item.href)}
+                      className={`w-full rounded-lg px-4 py-3.5 text-left text-lg font-medium transition-colors ${
+                        activeSection === item.href
+                          ? "bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400"
+                          : "text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-900"
+                      }`}
+                    >
+                      {item.name}
+                    </motion.button>
+                  ))}
                 </div>
+              </nav>
+
+              <div className="border-t border-gray-200 p-6 dark:border-gray-800">
+                <Button
+                  onClick={() => scrollToSection("#contact")}
+                  className="w-full"
+                  size="lg"
+                >
+                  Get in Touch
+                </Button>
               </div>
             </motion.div>
           </motion.div>

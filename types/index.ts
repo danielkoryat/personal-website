@@ -1,6 +1,14 @@
+export type SkillCategory =
+  | "backend"
+  | "cloud"
+  | "frontend"
+  | "ai-ml"
+  | "tools"
+  | "languages";
+
 export interface Skill {
   name: string;
-  category: "backend" | "cloud" | "frontend" | "ai-ml" | "tools" | "languages";
+  category: SkillCategory;
   certifications?: string[];
   description?: string;
 }
@@ -23,10 +31,24 @@ export interface Education {
   institution: string;
   degree: string;
   field: string;
-  startDate: string;
-  endDate: string;
+  /** Optional: self-paced certifications have no fixed term. */
+  startDate?: string;
+  endDate?: string;
   description: string;
   certifications?: string[];
+}
+
+export interface Project {
+  id: string;
+  name: string;
+  tagline: string;
+  description: string;
+  technologies: string[];
+  highlights?: string[];
+  repoUrl?: string;
+  liveUrl?: string;
+  /** Marks the project for the wider, emphasised card. */
+  featured?: boolean;
 }
 
 export interface ContactInfo {
@@ -46,8 +68,15 @@ export interface SiteConfig {
   subtitle: string;
   description: string;
   intro: string;
+  /** Path under `public/` to a portrait. Falls back to a monogram if unset. */
+  avatar?: string;
+  /** Short status line shown in the hero pill. */
+  availability?: string;
+  /** Canonical origin, used for metadata, sitemap and JSON-LD. */
+  siteUrl?: string;
   contact: ContactInfo;
   skills: Skill[];
   experience: Experience[];
   education: Education[];
+  projects?: Project[];
 }
